@@ -1,0 +1,62 @@
+:root{
+  --bg:#06111f; --panel:rgba(9,31,54,.92); --panel2:rgba(15,45,76,.92);
+  --line:rgba(157,215,255,.25); --text:#f5fbff; --muted:#9fb8cc;
+  --cyan:#35e6ff; --blue:#1388ff; --yellow:#ffd84a; --orange:#ff8b2a; --red:#ff3d3d;
+  --green:#67f6aa; --black:#020810;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;overscroll-behavior:none;}
+body{display:grid;place-items:center;overflow:hidden;}
+button,input,select{font:inherit;color:inherit}
+button{border:0;cursor:pointer}
+.phone{
+  width:min(100vw,480px); height:100dvh; max-height:980px; min-height:620px; overflow:hidden;
+  padding:calc(env(safe-area-inset-top) + 6px) 7px calc(env(safe-area-inset-bottom) + 6px);
+  background:
+    radial-gradient(circle at 14% 6%,rgba(42,182,255,.28),transparent 24%),
+    radial-gradient(circle at 82% 34%,rgba(38,255,218,.09),transparent 26%),
+    linear-gradient(180deg,#06111f 0%,#06213b 48%,#05101d 100%);
+  display:grid; gap:5px;
+  grid-template-rows:40px 41px 48px minmax(218px,1fr) 116px 136px 96px;
+}
+.topbar,.pointbar,.sunmoon,.chartCard,.nowCard,.hourly,.points{border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 28px rgba(0,0,0,.28);}
+.topbar{display:grid;grid-template-columns:1fr 42px 134px 42px 38px;align-items:center;gap:5px;border-radius:16px;padding:4px 6px;}
+.brand{display:flex;align-items:center;gap:7px;min-width:0}.bi{display:grid;place-items:center;width:34px;height:32px;line-height:1;border-radius:5px;background:#ffd400;color:#06111f;font-weight:900;font-size:13px}.bi b{font-size:13px}.title{font-weight:900;letter-spacing:-.03em;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navbtn,.datebtn,.gear{height:32px;border-radius:10px;background:linear-gradient(180deg,#1a5793,#0d3563);border:1px solid rgba(122,198,255,.38);font-weight:900}.navbtn{font-size:26px;line-height:1}.datebtn{font-size:15px}.gear{background:rgba(255,255,255,.08);font-size:20px}
+.pointbar{border-radius:16px;display:grid;grid-template-columns:38px 1fr 68px 62px;align-items:center;gap:6px;padding:5px 7px}.star{height:32px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:24px;color:var(--yellow)}.pointname{min-width:0;line-height:1.08}.pointname span{display:block;color:var(--muted);font-size:11px}.pointname strong{display:block;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tideBadge{height:32px;border-radius:9px;background:linear-gradient(180deg,#21adff,#0b53a9);display:grid;place-items:center;font-size:19px;font-weight:900;border:1px solid rgba(95,226,255,.6)}.moonBox{height:32px;border-radius:8px;background:rgba(0,0,0,.3);border:1px solid var(--line);display:grid;grid-template-columns:1fr;place-items:center;line-height:.9}.moonBox span{font-size:11px;color:var(--muted)}.moonBox b{font-size:17px;color:#fff}
+.sunmoon{border-radius:15px;display:grid;grid-template-columns:1.15fr .95fr repeat(4,1fr);gap:0;overflow:hidden}.sunmoon div{display:grid;place-items:center;border-right:1px solid rgba(255,255,255,.12);padding:2px 0;line-height:1.05}.sunmoon div:last-child{border-right:0}.sunmoon b{font-size:15px;color:#fff}.sunmoon div:first-child b{font-size:19px;color:#fff}.sunmoon span{font-size:10px;color:var(--muted)}
+.chartCard{position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,rgba(8,45,76,.98),rgba(4,24,43,.98));min-height:0}.chartCard:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 18%,rgba(82,198,255,.14),transparent 32%),repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 30px);opacity:.8}#tideSvg{position:relative;width:100%;height:100%;display:block;z-index:1}.axisText{font-size:10px;fill:#eaf8ff;font-weight:700}.smallText{font-size:9px;fill:#c9e4f7}.labelText{font-size:12px;fill:#06111f;font-weight:900}.calloutTime{font-size:12px;fill:#fff;font-weight:900}.calloutCm{font-size:12px;fill:#06111f;font-weight:900}.currentText{font-size:10px;fill:#fff;font-weight:900}.fish{fill:rgba(205,246,255,.14)}
+.nowCard{border-radius:16px;display:grid;grid-template-columns:1.6fr repeat(4,1fr) 1.55fr 62px;gap:4px;padding:5px;background:rgba(7,28,50,.94)}.weatherMain,.metric,.bestTime,.score{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.055);border-radius:12px;display:grid;place-items:center;text-align:center;min-width:0}.weatherMain{grid-row:span 2;grid-template-columns:44px 1fr;align-items:center;padding:4px}.weatherIcon{font-size:32px}.weatherMain span{display:block;font-size:11px;color:#eaf8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.weatherMain strong{display:block;font-size:24px;letter-spacing:-.05em}.metric{padding:4px 1px}.metric span,.bestTime span,.score span{font-size:10px;color:var(--muted)}.metric b{font-size:15px;white-space:nowrap}.bestTime{grid-column:2/7;grid-template-columns:72px 1fr 1fr;padding:3px;gap:3px}.bestTime b{display:grid;place-items:center;height:22px;border-radius:6px;font-size:14px;color:#06111f;background:linear-gradient(90deg,#ffd84a,#ffad2e)}.bestTime b:last-child{background:linear-gradient(90deg,#ff9f39,#ff5b3d)}.score{grid-column:7;grid-row:1/3}.score b{font-size:34px;color:var(--yellow);letter-spacing:-.06em;line-height:.95}.score small{font-size:11px;color:var(--muted);margin-top:-6px}
+.hourly{border-radius:16px;overflow:hidden;background:rgba(4,18,32,.96)}.grid{height:100%;display:grid;grid-template-columns:43px repeat(9,1fr);grid-template-rows:23px 25px 22px 22px 22px 22px;font-size:11px;text-align:center}.grid>div{border-right:1px solid rgba(255,255,255,.13);border-bottom:1px solid rgba(255,255,255,.12);display:grid;place-items:center;min-width:0}.grid .rowHead{font-weight:800;color:#e8f8ff;background:rgba(255,255,255,.075)}.grid .time{font-weight:900;background:rgba(64,104,132,.35)}.grid .ico{font-size:18px;line-height:1}.grid .val{font-size:13px}.grid .tiny{font-size:10px;line-height:1.05}.grid .windArrow{font-size:17px;line-height:.8}.grid>div:nth-last-child(-n+10){border-bottom:0}
+.points{border-radius:16px;padding:5px;background:rgba(5,20,36,.96)}.pointGrid{height:100%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px}.pointBtn{border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.16);font-weight:900;font-size:14px;line-height:1.05;display:grid;place-items:center;padding:2px}.pointBtn.active{background:linear-gradient(180deg,#159bff,#084fcb);border-color:#45e2ff;color:#fff;box-shadow:0 0 0 1px rgba(53,230,255,.35) inset}.pointBtn .miniStar{font-size:12px;color:var(--yellow);margin-top:1px}
+.manageDialog{width:min(94vw,440px);border:0;padding:0;border-radius:20px;background:transparent;color:var(--text)}.manageDialog::backdrop{background:rgba(0,0,0,.72)}.managePanel{background:linear-gradient(180deg,#092641,#061321);border:1px solid rgba(153,219,255,.3);border-radius:20px;padding:12px;box-shadow:0 24px 80px rgba(0,0,0,.55)}.dialogHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.dialogHead strong{font-size:20px}.dialogHead button{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.1);font-size:24px}.prefTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}.prefTabs button,.dialogActions button,.addGrid button{height:40px;border-radius:12px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);font-weight:900}.prefTabs button.active{background:#0c83f2}.manageList{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;max-height:220px;overflow:hidden}.manageItem{display:grid;grid-template-columns:1fr 34px;gap:5px;align-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:5px 6px;font-size:13px}.manageItem button{width:32px;height:32px;border-radius:9px;background:rgba(255,61,61,.75);font-weight:900}.addGrid{display:grid;grid-template-columns:72px 1fr 78px 78px 64px;gap:6px;margin-top:10px}.addGrid input,.addGrid select{height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.25);padding:0 8px;color:var(--text);min-width:0}.hint{font-size:11px;color:var(--muted);margin:8px 0}.dialogActions{display:grid;grid-template-columns:1fr 92px;gap:8px}
+@media (max-width:390px){.phone{grid-template-rows:38px 39px 45px minmax(204px,1fr) 108px 126px 88px;gap:4px;padding-left:5px;padding-right:5px}.topbar{grid-template-columns:1fr 36px 118px 36px 34px}.title{font-size:13px}.datebtn{font-size:13px}.pointname strong{font-size:19px}.tideBadge{font-size:17px}.sunmoon b{font-size:13px}.sunmoon div:first-child b{font-size:16px}.nowCard{grid-template-columns:1.45fr repeat(4,1fr) 1.45fr 56px}.weatherMain strong{font-size:21px}.weatherIcon{font-size:28px}.metric b{font-size:13px}.bestTime{grid-template-columns:62px 1fr 1fr}.bestTime b{font-size:12px}.score b{font-size:28px}.grid{grid-template-columns:38px repeat(9,1fr);font-size:10px;grid-template-rows:21px 23px 20px 20px 20px 20px}.grid .val{font-size:12px}.pointBtn{font-size:12px}.addGrid{grid-template-columns:1fr 1fr;}.addGrid button{grid-column:span 2}}
+@media (max-height:720px){.phone{grid-template-rows:35px 36px 40px minmax(180px,1fr) 92px 112px 76px;gap:3px}.sunmoon span,.metric span,.bestTime span,.score span{font-size:9px}.weatherMain strong{font-size:19px}.grid{grid-template-rows:18px 20px 18px 18px 18px 18px}.pointBtn{font-size:11px;border-radius:9px}.bestTime b{height:18px;font-size:11px}.weatherIcon{font-size:24px}.manageList{max-height:170px}}
+/* Final icon integration */
+.appLogo{
+  width:34px;
+  height:34px;
+  border-radius:9px;
+  object-fit:cover;
+  box-shadow:0 0 0 1px rgba(255,216,74,.65),0 0 14px rgba(255,139,42,.28);
+  flex:0 0 auto;
+}
+.scoreMini{
+  display:grid;
+  place-items:center;
+  min-width:34px;
+  height:30px;
+  padding:0 4px;
+  border-radius:7px;
+  background:#ffd400;
+  color:#06111f;
+  font-weight:900;
+  font-size:10px;
+  line-height:1;
+  border:1px solid rgba(255,255,255,.25);
+}
+.scoreMini b{font-size:13px;line-height:1;}
+@media (max-width:390px){
+  .appLogo{width:30px;height:30px;border-radius:8px;}
+  .scoreMini{display:none;}
+}

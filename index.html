@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#06111f" />
+<title>Fishing Tide BI</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="phone" aria-label="Fishing Tide BI one page dashboard">
+    <header class="topbar">
+      <div class="brand"><img class="appLogo" src="icon.png" alt="ST釣り潮アイコン"><span class="title">Fishing Tide BI</span><span class="scoreMini">BI <b id="scoreBadge">--</b></span></div>
+      <button id="prevDay" class="navbtn" aria-label="前日">‹</button>
+      <button id="dateButton" class="datebtn" aria-label="日付">--</button>
+      <button id="nextDay" class="navbtn" aria-label="翌日">›</button>
+      <button id="manageButton" class="gear" aria-label="ポイント管理">⚙</button>
+    </header>
+
+    <section class="pointbar" aria-label="現在のポイント">
+      <button id="favoriteButton" class="star" aria-label="お気に入り">☆</button>
+      <div class="pointname"><span id="prefName">--</span><strong id="pointName">--</strong></div>
+      <div class="tideBadge" id="tideType">--</div>
+      <div class="moonBox"><span>月齢</span><b id="moonAge">--</b></div>
+    </section>
+
+    <section class="sunmoon" aria-label="日の出・月の出">
+      <div><b id="currentTide">--cm</b><span>現在潮位</span></div>
+      <div><b id="tideDiff">--</b><span>前回差</span></div>
+      <div><b id="sunrise">--:--</b><span>日の出</span></div>
+      <div><b id="sunset">--:--</b><span>日の入</span></div>
+      <div><b id="moonrise">--:--</b><span>月の出</span></div>
+      <div><b id="moonset">--:--</b><span>月の入</span></div>
+    </section>
+
+    <section class="chartCard" aria-label="タイドグラフ">
+      <svg id="tideSvg" viewBox="0 0 390 256" preserveAspectRatio="none" role="img" aria-label="24時間タイドグラフ"></svg>
+    </section>
+
+    <section class="nowCard" aria-label="現在の釣り条件">
+      <div class="weatherMain">
+        <div id="weatherIcon" class="weatherIcon">--</div>
+        <div><span id="weatherText">取得中</span><strong id="temperature">--.-℃</strong></div>
+      </div>
+      <div class="metric"><span>風向</span><b id="windDir">--</b></div>
+      <div class="metric"><span>風速</span><b id="windSpeed">--</b></div>
+      <div class="metric"><span>波高</span><b id="waveHeight">--</b></div>
+      <div class="metric"><span>水温</span><b id="waterTemp">--</b></div>
+      <div class="bestTime"><span>おすすめ</span><b id="bestTime1">--:--〜--:--</b><b id="bestTime2">--:--〜--:--</b></div>
+      <div class="score"><span>釣り</span><b id="fishScore">--</b><small>/100</small></div>
+    </section>
+
+    <section class="hourly" aria-label="1時間ごとの天気・風向・風速・波高">
+      <div class="grid" id="hourlyGrid"></div>
+    </section>
+
+    <section class="points" aria-label="ポイント選択">
+      <div id="pointGrid" class="pointGrid"></div>
+    </section>
+  </main>
+
+  <dialog id="manageDialog" class="manageDialog">
+    <form method="dialog" class="managePanel">
+      <div class="dialogHead"><strong>ポイント管理</strong><button value="close" aria-label="閉じる">×</button></div>
+      <div class="prefTabs" id="prefTabs"></div>
+      <div class="manageList" id="manageList"></div>
+      <div class="addGrid">
+        <select id="addPref" aria-label="県">
+          <option>三重</option><option>愛知</option><option>静岡</option>
+        </select>
+        <input id="addName" placeholder="例：衣浦港" maxlength="8" />
+        <input id="addLat" placeholder="緯度" inputmode="decimal" />
+        <input id="addLon" placeholder="経度" inputmode="decimal" />
+        <button id="addPoint" value="" type="button">登録</button>
+      </div>
+      <p class="hint">メイン画面は9地点まで表示。削除しても「初期に戻す」で復帰できます。</p>
+      <div class="dialogActions"><button id="resetPoints" value="" type="button">初期9地点に戻す</button><button value="close">閉じる</button></div>
+    </form>
+  </dialog>
+
+<script src="script.js"></script>
+</body>
+</html>
