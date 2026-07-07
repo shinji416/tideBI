@@ -10,9 +10,21 @@
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://api.open-meteo.com">
 <link rel="preconnect" href="https://marine-api.open-meteo.com">
+<link rel="preconnect" href="https://api.p2pquake.net">
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <section id="quakeAlert" class="quakeAlert" aria-live="assertive" hidden>
+    <div class="quakeBox">
+      <div class="quakeTitle">地震発生</div>
+      <div id="quakeScale" class="quakeScale">震度--</div>
+      <div id="quakeEpicenter" class="quakeEpicenter">震源：--</div>
+      <div id="quakeMessage" class="quakeMessage">海岸・堤防・河口から離れてください</div>
+      <div id="quakeTsunami" class="quakeTsunami">津波情報を確認してください</div>
+      <button id="quakeClose" class="quakeClose">確認しました</button>
+    </div>
+  </section>
+
   <main class="appShell" aria-label="Fishing Tide BI">
     <header class="topbar">
       <div class="brand"><img src="icon.png" class="brandIcon" alt="ST釣り潮"><span>Fishing Tide BI</span></div>
@@ -20,7 +32,7 @@
       <button id="dateButton" class="dateBtn">--</button>
       <button id="nextDay" class="roundBtn" aria-label="翌日">›</button>
       <button id="mapOpen" class="smallBtn primary">釣場</button>
-      <button id="settingsOpen" class="smallBtn">⚙</button>
+      <button id="settingsOpen" class="smallBtn settingsBtn">設定</button>
     </header>
 
     <section class="pointbar">
@@ -83,8 +95,21 @@
 
   <dialog id="settingsDialog" class="settingsDialog">
     <form method="dialog" class="settingsPanel">
-      <div class="dialogHead"><strong>マイポイント管理</strong><button value="close">×</button></div>
+      <div class="dialogHead"><strong>設定・警報</strong><button value="close">×</button></div>
       <p class="hint">9地点までホーム画面に表示します。釣り場候補から選ぶと、空きがあれば追加、満杯なら現在表示中の地点と入れ替えます。</p>
+      <div class="quakeSettings">
+        <div class="quakeSettingsHead">
+          <strong>地震・津波アラート</strong><span class="quakeSub">釣り場安全</span>
+          <label class="switchLine"><input id="quakeAlertToggle" type="checkbox"> ON</label>
+        </div>
+        <p>震度3以上、または津波情報がある場合に、赤い全画面警告を表示します。</p>
+        <div class="quakeButtons">
+          <button id="enableAlarm" type="button" class="wideBtn warningBtn">警報音を有効化</button>
+          <button id="testQuakeAlert" type="button" class="wideBtn dangerBtn">警報テスト</button>
+        </div>
+        <div id="quakeStatus" class="quakeStatus">地震情報：待機中</div>
+      </div>
+
       <div id="manageList" class="manageList"></div>
       <button id="resetPoints" type="button" value="" class="wideBtn">初期9地点に戻す</button>
       <button value="close" class="wideBtn">閉じる</button>

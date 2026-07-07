@@ -1,3 +1,167 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
+<title>Fishing Tide BI サーフ強化版</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://api.open-meteo.com">
+<link rel="preconnect" href="https://marine-api.open-meteo.com">
+<link rel="preconnect" href="https://api.p2pquake.net">
+<style>
+:root{
+  --bg:#000; --panel:#071525; --panel2:#0b2238; --line:rgba(120,195,255,.28);
+  --text:#f6fbff; --muted:#9fb3c7; --cyan:#36e6ff; --blue:#1597ff;
+  --yellow:#ffd84a; --orange:#ff9838; --red:#ff3947; --green:#60ffa8;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;overscroll-behavior:none}
+body{display:grid;place-items:center;overflow:hidden}
+button,input,select{font:inherit;color:inherit} button{border:0;cursor:pointer} button:disabled{opacity:.45;cursor:not-allowed}
+.appShell{width:min(100vw,480px);height:100dvh;max-height:980px;min-height:620px;overflow:hidden;background:#000;padding:calc(env(safe-area-inset-top) + 5px) 7px calc(env(safe-area-inset-bottom) + 5px);display:grid;gap:5px;grid-template-rows:40px 42px 47px minmax(210px,1fr) 120px 92px 96px}
+.topbar,.pointbar,.statusStrip,.chartCard,.hourlyCard,.nowCard,.pointsPanel{background:linear-gradient(180deg,rgba(8,27,45,.96),rgba(3,12,22,.98));border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.topbar{display:grid;grid-template-columns:1fr 32px 92px 32px 47px 50px;gap:4px;align-items:center;border-radius:15px;padding:4px}.brand{display:flex;align-items:center;gap:6px;min-width:0;font-weight:900;letter-spacing:-.03em;white-space:nowrap;overflow:hidden}.brandIcon{width:32px;height:32px;border-radius:9px;object-fit:cover}.brand span{font-size:14px;overflow:hidden;text-overflow:ellipsis}.roundBtn,.dateBtn,.smallBtn{height:32px;border-radius:10px;border:1px solid rgba(141,205,255,.35);background:linear-gradient(180deg,#174f88,#082a4d);font-weight:900}.roundBtn{font-size:24px;line-height:1}.dateBtn{font-size:14px}.smallBtn{font-size:13px;padding:0 6px;background:rgba(255,255,255,.08)}.settingsBtn{background:linear-gradient(180deg,#ff3545,#9d0000)!important;color:#fff;font-weight:1000;border-color:rgba(255,255,255,.45)!important}.primary{background:linear-gradient(180deg,#24a5ff,#0755b4)!important;color:#fff}
+.pointbar{border-radius:15px;display:grid;grid-template-columns:38px 1fr 70px 58px;gap:6px;align-items:center;padding:5px 7px}.favBtn{height:32px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:23px;color:var(--yellow)}.pointTitle{min-width:0;line-height:1.05}.pointTitle span{display:block;color:var(--muted);font-size:11px}.pointTitle strong{font-size:23px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tideBadge{height:33px;border-radius:10px;display:grid;place-items:center;font-size:18px;font-weight:900;background:linear-gradient(180deg,#22b3ff,#0958b9);border:1px solid rgba(89,229,255,.65)}.miniScore{height:33px;border-radius:8px;border:1px solid var(--line);background:#050b12;display:grid;place-items:center;line-height:.9}.miniScore span{font-size:10px;color:var(--muted)}.miniScore b{font-size:21px;color:var(--yellow)}
+.statusStrip{display:grid;grid-template-columns:1.05fr .95fr .85fr repeat(4,1fr);border-radius:14px;overflow:hidden}.statusStrip div{display:grid;place-items:center;line-height:1.04;border-right:1px solid rgba(255,255,255,.13);padding:2px 0}.statusStrip div:last-child{border-right:0}.statusStrip b{font-size:14px}.statusStrip div:first-child b{font-size:19px}.statusStrip span{font-size:10px;color:var(--muted)}
+.chartCard{position:relative;border-radius:15px;overflow:hidden;background:#000;min-height:0}.chartCard:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 48% 44%,rgba(33,178,255,.15),transparent 34%),linear-gradient(180deg,#001320,#000 90%);opacity:.95}.chartCard:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 30px),repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 38px);opacity:.75}#tideSvg{position:relative;z-index:1;width:100%;height:100%;display:block}.axisText{font-size:10px;fill:#eaf8ff;font-weight:800}.smallText{font-size:9px;fill:#cde9ff}.labelText{font-size:12px;fill:#06111f;font-weight:900}.calloutTime{font-size:12px;fill:#fff;font-weight:900}.calloutCm{font-size:12px;fill:#06111f;font-weight:900}.currentText{font-size:10px;fill:#fff;font-weight:900}.fish{fill:rgba(178,226,255,.13)}
+.hourlyCard{border-radius:14px;overflow:hidden;background:#010407}.hourlyGrid{height:100%;display:grid;grid-template-columns:42px repeat(9,1fr);grid-template-rows:22px 24px 24px 24px 24px 24px}.hourlyGrid>div{display:grid;place-items:center;border-right:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);font-size:12px;line-height:1.0;min-width:0}.hourlyGrid>div:nth-child(10n){border-right:0}.rowHead{background:rgba(255,255,255,.08);color:#eaf8ff;font-weight:900}.hourCell{font-weight:900;color:#fff;background:rgba(44,106,149,.5)}.weatherCell{font-size:17px!important}.arrow{font-size:18px;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.4);display:inline-block}.numCell{font-weight:800;color:#fff}.waveCell{color:#a9eaff;font-weight:800}.tempCell{color:#ffd88d;font-weight:800}
+.safeBlue{color:#48d7ff!important;text-shadow:0 0 8px rgba(72,215,255,.35)}
+.safeYellow{color:#ffd84a!important;text-shadow:0 0 8px rgba(255,216,74,.35)}
+.safeRed{color:#ff3947!important;text-shadow:0 0 8px rgba(255,57,71,.5)}
+
+.nowCard{border-radius:14px;display:grid;grid-template-columns:1.25fr repeat(4,.78fr) 1.28fr;gap:4px;padding:5px;background:#02070d;min-width:0}
+.nowCard>*{min-width:0;overflow:hidden}.weatherNow,.metric,.bestBox{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.055);border-radius:12px;display:grid;place-items:center;text-align:center;min-width:0}.weatherNow{grid-template-columns:38px 1fr;grid-template-rows:1fr 1fr;padding:3px 5px}.weatherNow div{grid-row:1/3;font-size:31px}.weatherNow span{font-size:10px;color:#dcecff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.weatherNow b{font-size:19px;letter-spacing:-.06em;white-space:nowrap;overflow:hidden;text-overflow:clip}.metric span,.bestBox span{font-size:10px;color:var(--muted)}.metric b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:clip}.bestBox{grid-template-columns:1fr;grid-template-rows:18px 1fr 1fr;padding:3px;gap:3px}.bestBox b{height:24px;width:100%;border-radius:7px;background:linear-gradient(90deg,#ffd94d,#ffac30);display:grid;place-items:center;color:#06111f;font-size:12px;white-space:nowrap;overflow:hidden}.bestBox b:last-child{background:linear-gradient(90deg,#ff9e40,#ff5a43)}
+.pointsPanel{border-radius:14px;padding:5px;overflow:hidden;background:#010306}.pointGrid{height:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.pointBtn{position:relative;display:grid;place-items:center;text-align:center;line-height:1.05;border-radius:12px;background:linear-gradient(180deg,#142b42,#081521);border:1px solid rgba(170,220,255,.25);font-size:14px;font-weight:900;padding:2px 22px 2px 5px;overflow:hidden}.pointBtn.active{background:linear-gradient(180deg,#20aaff,#0754b3);border-color:#4be6ff;box-shadow:0 0 0 1px rgba(54,230,255,.5) inset}.pointBtn .pin{position:absolute;right:5px;top:5px;color:var(--yellow);font-size:12px}.pointBtn small{font-size:10px;color:var(--muted);display:block}.pointBtn.active small{color:#e9f7ff}
+.mapDialog,.settingsDialog{border:0;padding:0;margin:auto;background:transparent;color:var(--text);width:min(100vw,480px);height:100dvh;max-height:980px}.mapDialog::backdrop,.settingsDialog::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(5px)}.mapPanel{height:100%;padding:calc(env(safe-area-inset-top) + 7px) 7px calc(env(safe-area-inset-bottom) + 7px);background:#000;display:grid;gap:6px;grid-template-rows:40px 42px 38px 34px 74px minmax(280px,1fr)}.mapHead{display:grid;grid-template-columns:70px 1fr 74px;gap:6px;align-items:center}.mapHead strong{text-align:center;font-size:18px}.spotLead{margin:0;border:1px solid var(--line);background:linear-gradient(180deg,#0a2034,#02070d);border-radius:13px;padding:8px 10px;color:#cfe5f8;font-size:12px;font-weight:800;line-height:1.35}.prefChips,.typeChips{display:grid;gap:5px}.prefChips{grid-template-columns:repeat(6,1fr)}.typeChips{grid-template-columns:repeat(6,1fr)}.chip{height:100%;border-radius:10px;border:1px solid var(--line);background:#081725;font-size:12px;font-weight:900}.chip.active{background:linear-gradient(180deg,#23aaff,#0754b3);border-color:#50e9ff}.mapInfo{display:grid;grid-template-columns:1fr 74px 70px;gap:6px;align-items:center;border:1px solid var(--line);background:linear-gradient(180deg,#0a2034,#02070d);border-radius:15px;padding:7px}.mapInfo b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mapInfo span{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.yellowBtn{height:44px;border-radius:11px;background:linear-gradient(180deg,#ffe357,#ffba20);color:#07111d;font-size:16px;font-weight:900}.spotList{overflow:auto;border:1px solid var(--line);border-radius:15px;background:#02070d;padding:5px;display:grid;gap:5px;align-content:start}.spotItem{min-height:48px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:#081725;display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px;padding:6px 8px;text-align:left}.spotItem b{font-size:15px}.spotItem span{display:block;font-size:11px;color:var(--muted)}.spotItem.active{border-color:#54eaff;background:#082f55}.distance{font-size:12px;color:var(--yellow);font-weight:900}.spotTypeSurf{color:#ffd84a!important}.spotTypeRiver{color:#60ffa8!important}.spotTypePort{color:#a9eaff!important}
+.settingsPanel{height:auto;max-height:86dvh;margin:7dvh 8px 0;padding:14px;border-radius:18px;background:#071525;border:1px solid var(--line);display:grid;gap:10px}.dialogHead{display:grid;grid-template-columns:1fr 42px;align-items:center}.dialogHead strong{font-size:20px}.dialogHead button{height:36px;border-radius:10px;background:rgba(255,255,255,.1);font-size:22px}.hint{margin:0;color:#c4d8eb;font-size:13px;line-height:1.45}.manageList{display:grid;gap:6px;max-height:48dvh;overflow:auto}.manageRow{display:grid;grid-template-columns:1fr 54px;gap:6px;align-items:center}.manageName{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);border-radius:11px;padding:9px 10px;font-weight:900}.deleteBtn{height:42px;border-radius:11px;background:#c83043;font-weight:900}.wideBtn{height:48px;border-radius:13px;background:#132b43;border:1px solid var(--line);font-weight:900}
+@media (max-height:760px){.appShell{grid-template-rows:38px 40px 42px minmax(170px,1fr) 112px 84px 88px;gap:4px}.pointTitle strong{font-size:20px}.statusStrip b{font-size:12px}.chartCard{border-radius:13px}.hourlyGrid{grid-template-rows:20px 22px 22px 22px 22px 22px}.nowCard{grid-template-columns:1.18fr repeat(4,.72fr) 1.25fr}.weatherNow b{font-size:17px}.metric b{font-size:12px}.bestBox b{font-size:11px}.pointBtn{font-size:12px}.mapPanel{grid-template-rows:38px 38px 34px 31px 66px minmax(170px,1fr)}}
+
+
+/* Earthquake / Tsunami safety alert */
+.quakeAlert{position:fixed;inset:0;z-index:9999;background:rgba(80,0,0,.94);display:grid;place-items:center;padding:18px;animation:quakeFlash 1s infinite}
+.quakeAlert[hidden]{display:none!important}
+.quakeBox{width:min(94vw,440px);border:4px solid #fff;border-radius:26px;background:linear-gradient(180deg,#f20b18,#7a0000);box-shadow:0 0 0 7px rgba(255,255,255,.18),0 0 42px rgba(255,0,0,.75);padding:22px 16px;text-align:center;color:#fff}
+.quakeTitle{font-size:44px;font-weight:1000;letter-spacing:.08em;line-height:1;text-shadow:0 3px 0 #630000}
+.quakeScale{font-size:54px;font-weight:1000;line-height:1.05;margin-top:10px;color:#fff600;text-shadow:0 3px 0 #530000,0 0 16px rgba(255,246,0,.5)}
+.quakeEpicenter{font-size:25px;font-weight:1000;margin-top:8px;line-height:1.2}
+.quakeMessage{font-size:22px;font-weight:1000;margin-top:12px;line-height:1.28;background:rgba(0,0,0,.22);border-radius:14px;padding:10px 8px}
+.quakeTsunami{font-size:20px;font-weight:900;margin-top:10px;color:#fff600;line-height:1.25}
+.quakeClose{width:100%;height:54px;margin-top:18px;border-radius:16px;background:#fff;color:#9b0000;font-size:22px;font-weight:1000;border:0}
+@keyframes quakeFlash{0%,100%{background:rgba(80,0,0,.94)}50%{background:rgba(170,0,0,.98)}}
+.quakeSettings{border:1px solid rgba(255,80,80,.45);background:rgba(80,0,0,.18);border-radius:14px;padding:10px;margin:8px 0;color:#fff}
+.quakeSettingsHead{display:flex;align-items:center;justify-content:space-between;gap:8px}.quakeSettingsHead strong{font-size:16px;color:#ffdddd}.switchLine{font-size:14px;font-weight:900;display:flex;align-items:center;gap:6px}.switchLine input{width:22px;height:22px;accent-color:#ff3947}.quakeSettings p{font-size:12px;line-height:1.35;color:#ffcaca;margin:8px 0}.quakeButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.warningBtn{background:linear-gradient(180deg,#ffd84a,#bc6b00)!important;color:#1b1300!important}.dangerBtn{background:linear-gradient(180deg,#ff3545,#9d0000)!important;color:#fff!important}.quakeStatus{font-size:12px;color:#ffcaca;margin-top:8px;line-height:1.35}
+
+.quakeSub{font-size:11px;color:#ffd84a;font-weight:900;margin-left:6px}.quakeSettingsHead{flex-wrap:wrap}.quakeButtons .wideBtn{font-size:15px}
+
+</style>
+</head>
+<body>
+  <section id="quakeAlert" class="quakeAlert" aria-live="assertive" hidden>
+    <div class="quakeBox">
+      <div class="quakeTitle">地震発生</div>
+      <div id="quakeScale" class="quakeScale">震度--</div>
+      <div id="quakeEpicenter" class="quakeEpicenter">震源：--</div>
+      <div id="quakeMessage" class="quakeMessage">海岸・堤防・河口から離れてください</div>
+      <div id="quakeTsunami" class="quakeTsunami">津波情報を確認してください</div>
+      <button id="quakeClose" class="quakeClose">確認しました</button>
+    </div>
+  </section>
+
+  <main class="appShell" aria-label="Fishing Tide BI">
+    <header class="topbar">
+      <div class="brand"><img src="icon.png" class="brandIcon" alt="ST釣り潮"><span>Fishing Tide BI</span></div>
+      <button id="prevDay" class="roundBtn" aria-label="前日">‹</button>
+      <button id="dateButton" class="dateBtn">--</button>
+      <button id="nextDay" class="roundBtn" aria-label="翌日">›</button>
+      <button id="mapOpen" class="smallBtn primary">釣場</button>
+      <button id="settingsOpen" class="smallBtn settingsBtn">設定</button>
+    </header>
+
+    <section class="pointbar">
+      <button id="favButton" class="favBtn" aria-label="お気に入り">☆</button>
+      <div class="pointTitle"><span id="prefName">--</span><strong id="pointName">--</strong></div>
+      <div class="tideBadge" id="tideType">--</div>
+      <div class="miniScore"><span>釣り</span><b id="scoreBadge">--</b></div>
+    </section>
+
+    <section class="statusStrip">
+      <div><b id="currentTide">--</b><span>現在潮位</span></div>
+      <div><b id="tideDiff">--</b><span>前回差</span></div>
+      <div><b id="moonAge">--</b><span>月齢</span></div>
+      <div><b id="sunrise">--:--</b><span>日の出</span></div>
+      <div><b id="sunset">--:--</b><span>日の入</span></div>
+      <div><b id="moonrise">--:--</b><span>月出</span></div>
+      <div><b id="moonset">--:--</b><span>月入</span></div>
+    </section>
+
+    <section class="chartCard" aria-label="タイドグラフ">
+      <svg id="tideSvg" viewBox="0 0 390 255" preserveAspectRatio="none"></svg>
+    </section>
+
+    <section class="hourlyCard" aria-label="時間別 天気 風 波">
+      <div id="hourlyGrid" class="hourlyGrid"></div>
+    </section>
+
+    <section class="nowCard">
+      <div class="weatherNow"><div id="weatherIcon">--</div><span id="weatherText">取得中</span><b id="temperature">--℃</b></div>
+      <div class="metric"><span>風向</span><b id="windDir">--</b></div>
+      <div class="metric"><span>風速</span><b id="windSpeed">--</b></div>
+      <div class="metric"><span>波高</span><b id="waveHeight">--</b></div>
+      <div class="metric"><span>水温</span><b id="waterTemp">--</b></div>
+      <div class="bestBox"><span>おすすめ</span><b id="bestTime1">--:--〜--:--</b><b id="bestTime2">--:--〜--:--</b></div>
+    </section>
+
+    <section class="pointsPanel">
+      <div id="pointGrid" class="pointGrid"></div>
+    </section>
+  </main>
+
+  <dialog id="mapDialog" class="mapDialog">
+    <div class="mapPanel spotSelectPanel">
+      <div class="mapHead">
+        <button id="mapClose" class="smallBtn">閉じる</button>
+        <strong>釣り場候補から登録</strong>
+        <button id="nearButton" class="smallBtn primary">近い順</button>
+      </div>
+      <p class="spotLead">地図は使わず、県・種類・釣り場名から選びます。選択すると緯度・経度は自動で入ります。</p>
+      <div class="prefChips" id="prefChips"></div>
+      <div class="typeChips" id="typeChips"></div>
+      <div class="mapInfo spotChoiceInfo">
+        <div><b id="mapSpotName">釣り場を選択</b><span id="mapSpotMeta">愛知・三重・静岡のサーフを増やしています</span></div>
+        <button id="registerMapSpot" class="yellowBtn" disabled>登録</button>
+        <button id="openGoogleMap" class="smallBtn" disabled>確認</button>
+      </div>
+      <div class="spotList" id="spotList"></div>
+    </div>
+  </dialog>
+
+  <dialog id="settingsDialog" class="settingsDialog">
+    <form method="dialog" class="settingsPanel">
+      <div class="dialogHead"><strong>設定・警報</strong><button value="close">×</button></div>
+      <p class="hint">9地点までホーム画面に表示します。釣り場候補から選ぶと、空きがあれば追加、満杯なら現在表示中の地点と入れ替えます。</p>
+      <div class="quakeSettings">
+        <div class="quakeSettingsHead">
+          <strong>地震・津波アラート</strong><span class="quakeSub">釣り場安全</span>
+          <label class="switchLine"><input id="quakeAlertToggle" type="checkbox"> ON</label>
+        </div>
+        <p>震度3以上、または津波情報がある場合に、赤い全画面警告を表示します。</p>
+        <div class="quakeButtons">
+          <button id="enableAlarm" type="button" class="wideBtn warningBtn">警報音を有効化</button>
+          <button id="testQuakeAlert" type="button" class="wideBtn dangerBtn">警報テスト</button>
+        </div>
+        <div id="quakeStatus" class="quakeStatus">地震情報：待機中</div>
+      </div>
+
+      <div id="manageList" class="manageList"></div>
+      <button id="resetPoints" type="button" value="" class="wideBtn">初期9地点に戻す</button>
+      <button value="close" class="wideBtn">閉じる</button>
+    </form>
+  </dialog>
+
+<script>
 'use strict';
 
 const PREFS = ['愛知県','三重県','静岡県','和歌山県','福井県','石川県'];
@@ -595,3 +759,7 @@ function setupEvents(){
 setupEvents();
 renderAll();
 startEarthquakeWatch();
+
+</script>
+</body>
+</html>
