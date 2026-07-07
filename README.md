@@ -1,29 +1,34 @@
-# Fishing Tide BI Final
+# Fishing Tide BI 最終修正版
 
-スマホ1ページ固定の釣り用タイドグラフBIです。
+## 修正内容
+
+- 全体背景を黒に固定
+- タイドグラフの背景も黒に固定
+- コンテナ順序を明確に固定
+  1. ヘッダー
+  2. ポイント・潮回り
+  3. 潮位・日の出・月情報
+  4. タイドグラフ
+  5. 時間別コンテナ（時刻／天気／風向／風速／波高）
+  6. 現在状況
+  7. 9ポイント選択
+- ST釣り潮アイコンをヘッダーとホーム画面アイコンに反映
 
 ## GitHub Pagesへアップするファイル
 
-- index.html
-- style.css
-- script.js
-- manifest.webmanifest
-- icon.png
-- icon-192.png
-- icon-512.png
-- apple-touch-icon.png
+リポジトリ直下に以下を置いてください。
 
-## 特徴
+```text
+index.html
+style.css
+script.js
+manifest.webmanifest
+icon.png
+icon-192.png
+icon-512.png
+apple-touch-icon.png
+```
 
-- 1ページ固定、スクロールなし前提
-- 下部に最大9ポイント表示
-- 時間の下に毎時の天気・風向・風速・波高を表示
-- 今日、明日、3日後、7日後、14日後を切替
-- 新しいST釣り潮アイコンをヘッダーとホーム画面アイコンに使用
-- 天気、風、波、水温はOpen-Meteo系APIから取得
-- 潮汐は現時点では簡易推算。本番利用では潮汐API接続推奨
+## 注意
 
-## GitHub Pagesでの使い方
-
-リポジトリ直下に上記ファイルを置き、Pagesを有効化してください。
-公開URLをiPhone Safariで開き、共有メニューから「ホーム画面に追加」します。
+スマホ用1ファイル版は見た目確認用です。GitHub Pagesで使う場合は、分割ファイル版をアップしてください。

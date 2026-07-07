@@ -60,3 +60,94 @@ button{border:0;cursor:pointer}
   .appLogo{width:30px;height:30px;border-radius:8px;}
   .scoreMini{display:none;}
 }
+
+
+/* 2026-07 update: black background + hourly table directly under tide graph */
+html,body{background:#000!important;}
+.phone{
+  background:#000!important;
+  grid-template-rows:40px 41px 48px minmax(218px,1fr) 136px 116px 96px!important;
+}
+.topbar,.pointbar,.sunmoon,.chartCard,.nowCard,.hourly,.points{
+  background:rgba(2,8,14,.96)!important;
+  border-color:rgba(99,178,236,.28)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.55)!important;
+}
+.chartCard{
+  background:linear-gradient(180deg,rgba(3,20,34,.98),rgba(0,7,13,.98))!important;
+}
+.chartCard:before{
+  background:radial-gradient(circle at 50% 20%,rgba(49,193,255,.16),transparent 30%),repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 30px)!important;
+}
+.hourly{
+  background:rgba(0,5,10,.98)!important;
+  border-top-color:rgba(53,230,255,.42)!important;
+}
+.nowCard{
+  background:rgba(1,8,15,.98)!important;
+}
+.points{
+  background:rgba(0,5,10,.98)!important;
+}
+@media (max-width:390px){
+  .phone{grid-template-rows:38px 39px 45px minmax(204px,1fr) 126px 108px 88px!important;}
+}
+@media (max-height:720px){
+  .phone{grid-template-rows:35px 36px 40px minmax(180px,1fr) 112px 92px 76px!important;}
+}
+
+/* 2026-07-07 FIX: full black app + black tide graph + confirmed container order */
+html, body{
+  background:#000 !important;
+}
+body{
+  background:#000 !important;
+}
+.phone{
+  background:#000 !important;
+  grid-template-rows:40px 41px 48px minmax(218px,1fr) 136px 116px 96px !important;
+}
+.topbar{grid-row:1 !important;}
+.pointbar{grid-row:2 !important;}
+.sunmoon{grid-row:3 !important;}
+.chartCard{grid-row:4 !important;}
+.hourly{grid-row:5 !important;}
+.nowCard{grid-row:6 !important;}
+.points{grid-row:7 !important;}
+
+/* Graph itself: not blue. Make the tide graph panel black. */
+.chartCard{
+  background:#000 !important;
+  border-color:rgba(80,180,255,.45) !important;
+  box-shadow:0 0 0 1px rgba(0,210,255,.12) inset,0 10px 26px rgba(0,0,0,.75) !important;
+}
+.chartCard:before{
+  background:
+    radial-gradient(circle at 50% 26%,rgba(255,255,255,.06),transparent 28%),
+    repeating-linear-gradient(90deg,rgba(100,210,255,.055) 0 1px,transparent 1px 30px),
+    repeating-linear-gradient(0deg,rgba(100,210,255,.04) 0 1px,transparent 1px 31px) !important;
+  opacity:1 !important;
+}
+
+/* Other containers are black too, but keep borders visible. */
+.topbar,.pointbar,.sunmoon,.nowCard,.hourly,.points{
+  background:#000 !important;
+  border-color:rgba(80,180,255,.32) !important;
+  box-shadow:0 8px 22px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.025) inset !important;
+}
+.hourly{
+  margin-top:0 !important;
+  background:#000 !important;
+  border-top-color:rgba(53,230,255,.55) !important;
+}
+.grid .time{background:rgba(40,95,140,.38) !important;}
+.grid .rowHead{background:rgba(255,255,255,.08) !important;}
+.nowCard{background:#000 !important;}
+.points{background:#000 !important;}
+
+@media (max-width:390px){
+  .phone{grid-template-rows:38px 39px 45px minmax(204px,1fr) 126px 108px 88px !important;}
+}
+@media (max-height:720px){
+  .phone{grid-template-rows:35px 36px 40px minmax(180px,1fr) 112px 92px 76px !important;}
+}
