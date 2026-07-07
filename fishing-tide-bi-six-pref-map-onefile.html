@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
+<title>Fishing Tide BI 6県MAP</title>
+<link rel="preconnect" href="https://api.open-meteo.com">
+<link rel="preconnect" href="https://marine-api.open-meteo.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQKScwNQGt4jcX9c9JOcK2PL1PEjHXk=" crossorigin="">
+<style>
+:root{
+  --bg:#000; --panel:#071525; --panel2:#0b2238; --line:rgba(120,195,255,.28);
+  --text:#f6fbff; --muted:#9fb3c7; --cyan:#36e6ff; --blue:#1597ff;
+  --yellow:#ffd84a; --orange:#ff9838; --red:#ff3947; --green:#60ffa8;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;overscroll-behavior:none}
+body{display:grid;place-items:center;overflow:hidden}
+button,input,select{font:inherit;color:inherit} button{border:0;cursor:pointer} button:disabled{opacity:.45;cursor:not-allowed}
+.appShell{width:min(100vw,480px);height:100dvh;max-height:980px;min-height:620px;overflow:hidden;background:#000;padding:calc(env(safe-area-inset-top) + 5px) 7px calc(env(safe-area-inset-bottom) + 5px);display:grid;gap:5px;grid-template-rows:40px 42px 47px minmax(210px,1fr) 120px 92px 96px}
+.topbar,.pointbar,.statusStrip,.chartCard,.hourlyCard,.nowCard,.pointsPanel{background:linear-gradient(180deg,rgba(8,27,45,.96),rgba(3,12,22,.98));border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.topbar{display:grid;grid-template-columns:1fr 34px 104px 34px 49px 34px;gap:4px;align-items:center;border-radius:15px;padding:4px}.brand{display:flex;align-items:center;gap:6px;min-width:0;font-weight:900;letter-spacing:-.03em;white-space:nowrap;overflow:hidden}.brandIcon{width:32px;height:32px;border-radius:9px;object-fit:cover}.brand span{font-size:14px;overflow:hidden;text-overflow:ellipsis}.roundBtn,.dateBtn,.smallBtn{height:32px;border-radius:10px;border:1px solid rgba(141,205,255,.35);background:linear-gradient(180deg,#174f88,#082a4d);font-weight:900}.roundBtn{font-size:24px;line-height:1}.dateBtn{font-size:14px}.smallBtn{font-size:13px;padding:0 8px;background:rgba(255,255,255,.08)}.primary{background:linear-gradient(180deg,#24a5ff,#0755b4)!important;color:#fff}
+.pointbar{border-radius:15px;display:grid;grid-template-columns:38px 1fr 70px 58px;gap:6px;align-items:center;padding:5px 7px}.favBtn{height:32px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:23px;color:var(--yellow)}.pointTitle{min-width:0;line-height:1.05}.pointTitle span{display:block;color:var(--muted);font-size:11px}.pointTitle strong{font-size:23px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tideBadge{height:33px;border-radius:10px;display:grid;place-items:center;font-size:18px;font-weight:900;background:linear-gradient(180deg,#22b3ff,#0958b9);border:1px solid rgba(89,229,255,.65)}.miniScore{height:33px;border-radius:8px;border:1px solid var(--line);background:#050b12;display:grid;place-items:center;line-height:.9}.miniScore span{font-size:10px;color:var(--muted)}.miniScore b{font-size:21px;color:var(--yellow)}
+.statusStrip{display:grid;grid-template-columns:1.05fr .95fr .85fr repeat(4,1fr);border-radius:14px;overflow:hidden}.statusStrip div{display:grid;place-items:center;line-height:1.04;border-right:1px solid rgba(255,255,255,.13);padding:2px 0}.statusStrip div:last-child{border-right:0}.statusStrip b{font-size:14px}.statusStrip div:first-child b{font-size:19px}.statusStrip span{font-size:10px;color:var(--muted)}
+.chartCard{position:relative;border-radius:15px;overflow:hidden;background:#000;min-height:0}.chartCard:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 48% 44%,rgba(33,178,255,.15),transparent 34%),linear-gradient(180deg,#001320,#000 90%);opacity:.95}.chartCard:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 30px),repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 38px);opacity:.75}#tideSvg{position:relative;z-index:1;width:100%;height:100%;display:block}.axisText{font-size:10px;fill:#eaf8ff;font-weight:800}.smallText{font-size:9px;fill:#cde9ff}.labelText{font-size:12px;fill:#06111f;font-weight:900}.calloutTime{font-size:12px;fill:#fff;font-weight:900}.calloutCm{font-size:12px;fill:#06111f;font-weight:900}.currentText{font-size:10px;fill:#fff;font-weight:900}.fish{fill:rgba(178,226,255,.13)}
+.hourlyCard{border-radius:14px;overflow:hidden;background:#010407}.hourlyGrid{height:100%;display:grid;grid-template-columns:42px repeat(9,1fr);grid-template-rows:22px 24px 24px 24px 24px 24px}.hourlyGrid>div{display:grid;place-items:center;border-right:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);font-size:12px;line-height:1.0;min-width:0}.hourlyGrid>div:nth-child(10n){border-right:0}.rowHead{background:rgba(255,255,255,.08);color:#eaf8ff;font-weight:900}.hourCell{font-weight:900;color:#fff;background:rgba(44,106,149,.5)}.weatherCell{font-size:17px!important}.arrow{font-size:18px;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.4);display:inline-block}.numCell{font-weight:800;color:#fff}.waveCell{color:#a9eaff;font-weight:800}.tempCell{color:#ffd88d;font-weight:800}
+.nowCard{border-radius:14px;display:grid;grid-template-columns:1.35fr repeat(4,1fr) 1.7fr;gap:4px;padding:5px;background:#02070d}.weatherNow,.metric,.bestBox{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.055);border-radius:12px;display:grid;place-items:center;text-align:center;min-width:0}.weatherNow{grid-template-columns:38px 1fr;grid-template-rows:1fr 1fr;padding:3px 5px}.weatherNow div{grid-row:1/3;font-size:31px}.weatherNow span{font-size:11px;color:#dcecff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.weatherNow b{font-size:22px;letter-spacing:-.05em}.metric span,.bestBox span{font-size:10px;color:var(--muted)}.metric b{font-size:15px;white-space:nowrap}.bestBox{grid-template-columns:70px 1fr 1fr;padding:4px;gap:3px}.bestBox b{height:24px;border-radius:7px;background:linear-gradient(90deg,#ffd94d,#ffac30);display:grid;place-items:center;color:#06111f;font-size:13px}.bestBox b:last-child{background:linear-gradient(90deg,#ff9e40,#ff5a43)}
+.pointsPanel{border-radius:14px;padding:5px;overflow:hidden;background:#010306}.pointGrid{height:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.pointBtn{position:relative;display:grid;place-items:center;text-align:center;line-height:1.05;border-radius:12px;background:linear-gradient(180deg,#142b42,#081521);border:1px solid rgba(170,220,255,.25);font-size:14px;font-weight:900;padding:2px 22px 2px 5px;overflow:hidden}.pointBtn.active{background:linear-gradient(180deg,#20aaff,#0754b3);border-color:#4be6ff;box-shadow:0 0 0 1px rgba(54,230,255,.5) inset}.pointBtn .pin{position:absolute;right:5px;top:5px;color:var(--yellow);font-size:12px}.pointBtn small{font-size:10px;color:var(--muted);display:block}.pointBtn.active small{color:#e9f7ff}
+.mapDialog,.settingsDialog{border:0;padding:0;margin:auto;background:transparent;color:var(--text);width:min(100vw,480px);height:100dvh;max-height:980px}.mapDialog::backdrop,.settingsDialog::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(5px)}.mapPanel{height:100%;padding:calc(env(safe-area-inset-top) + 7px) 7px calc(env(safe-area-inset-bottom) + 7px);background:#000;display:grid;gap:6px;grid-template-rows:40px 38px 34px minmax(270px,1fr) 74px 170px}.mapHead{display:grid;grid-template-columns:70px 1fr 74px;gap:6px;align-items:center}.mapHead strong{text-align:center;font-size:18px}.prefChips,.typeChips{display:grid;gap:5px}.prefChips{grid-template-columns:repeat(6,1fr)}.typeChips{grid-template-columns:repeat(6,1fr)}.chip{height:100%;border-radius:10px;border:1px solid var(--line);background:#081725;font-size:12px;font-weight:900}.chip.active{background:linear-gradient(180deg,#23aaff,#0754b3);border-color:#50e9ff}.mapBox{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#081522}.leaflet-container{font-family:inherit}.leaflet-popup-content-wrapper{background:#06111f;color:#fff;border:1px solid rgba(80,190,255,.45);border-radius:12px}.leaflet-popup-tip{background:#06111f}.popupTitle{font-weight:900;font-size:15px}.popupMeta{color:#bfd1e3;font-size:12px;margin:.25em 0 .5em}.popupBtns{display:grid;grid-template-columns:1fr 1fr;gap:5px}.popupBtns button{height:34px;border-radius:8px;font-weight:900}.popupReg{background:#ffd84a;color:#08111e}.popupMap{background:#123659;color:#fff}.mapInfo{display:grid;grid-template-columns:1fr 74px 70px;gap:6px;align-items:center;border:1px solid var(--line);background:linear-gradient(180deg,#0a2034,#02070d);border-radius:15px;padding:7px}.mapInfo b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mapInfo span{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.yellowBtn{height:44px;border-radius:11px;background:linear-gradient(180deg,#ffe357,#ffba20);color:#07111d;font-size:16px;font-weight:900}.spotList{overflow:auto;border:1px solid var(--line);border-radius:15px;background:#02070d;padding:5px;display:grid;gap:5px;align-content:start}.spotItem{height:45px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:#081725;display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px;padding:5px 8px;text-align:left}.spotItem b{font-size:14px}.spotItem span{display:block;font-size:11px;color:var(--muted)}.spotItem.active{border-color:#54eaff;background:#082f55}.distance{font-size:12px;color:var(--yellow);font-weight:900}
+.settingsPanel{height:auto;max-height:86dvh;margin:7dvh 8px 0;padding:14px;border-radius:18px;background:#071525;border:1px solid var(--line);display:grid;gap:10px}.dialogHead{display:grid;grid-template-columns:1fr 42px;align-items:center}.dialogHead strong{font-size:20px}.dialogHead button{height:36px;border-radius:10px;background:rgba(255,255,255,.1);font-size:22px}.hint{margin:0;color:#c4d8eb;font-size:13px;line-height:1.45}.manageList{display:grid;gap:6px;max-height:48dvh;overflow:auto}.manageRow{display:grid;grid-template-columns:1fr 54px;gap:6px;align-items:center}.manageName{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);border-radius:11px;padding:9px 10px;font-weight:900}.deleteBtn{height:42px;border-radius:11px;background:#c83043;font-weight:900}.wideBtn{height:48px;border-radius:13px;background:#132b43;border:1px solid var(--line);font-weight:900}
+@media (max-height:760px){.appShell{grid-template-rows:38px 40px 42px minmax(170px,1fr) 112px 84px 88px;gap:4px}.pointTitle strong{font-size:20px}.statusStrip b{font-size:12px}.chartCard{border-radius:13px}.hourlyGrid{grid-template-rows:20px 22px 22px 22px 22px 22px}.nowCard{grid-template-columns:1.25fr repeat(4,1fr) 1.55fr}.weatherNow b{font-size:19px}.bestBox b{font-size:12px}.pointBtn{font-size:12px}.mapPanel{grid-template-rows:38px 34px 31px minmax(220px,1fr) 66px 132px}}
+
+</style>
+</head>
+<body>
+  <main class="appShell" aria-label="Fishing Tide BI">
+    <header class="topbar">
+      <div class="brand"><img src="data:image/png;base64,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" class="brandIcon" alt="ST釣り潮"><span>Fishing Tide BI</span></div>
+      <button id="prevDay" class="roundBtn" aria-label="前日">‹</button>
+      <button id="dateButton" class="dateBtn">--</button>
+      <button id="nextDay" class="roundBtn" aria-label="翌日">›</button>
+      <button id="mapOpen" class="smallBtn primary">MAP</button>
+      <button id="settingsOpen" class="smallBtn">⚙</button>
+    </header>
+
+    <section class="pointbar">
+      <button id="favButton" class="favBtn" aria-label="お気に入り">☆</button>
+      <div class="pointTitle"><span id="prefName">--</span><strong id="pointName">--</strong></div>
+      <div class="tideBadge" id="tideType">--</div>
+      <div class="miniScore"><span>釣り</span><b id="scoreBadge">--</b></div>
+    </section>
+
+    <section class="statusStrip">
+      <div><b id="currentTide">--</b><span>現在潮位</span></div>
+      <div><b id="tideDiff">--</b><span>前回差</span></div>
+      <div><b id="moonAge">--</b><span>月齢</span></div>
+      <div><b id="sunrise">--:--</b><span>日の出</span></div>
+      <div><b id="sunset">--:--</b><span>日の入</span></div>
+      <div><b id="moonrise">--:--</b><span>月出</span></div>
+      <div><b id="moonset">--:--</b><span>月入</span></div>
+    </section>
+
+    <section class="chartCard" aria-label="タイドグラフ">
+      <svg id="tideSvg" viewBox="0 0 390 255" preserveAspectRatio="none"></svg>
+    </section>
+
+    <section class="hourlyCard" aria-label="時間別 天気 風 波">
+      <div id="hourlyGrid" class="hourlyGrid"></div>
+    </section>
+
+    <section class="nowCard">
+      <div class="weatherNow"><div id="weatherIcon">--</div><span id="weatherText">取得中</span><b id="temperature">--℃</b></div>
+      <div class="metric"><span>風向</span><b id="windDir">--</b></div>
+      <div class="metric"><span>風速</span><b id="windSpeed">--</b></div>
+      <div class="metric"><span>波高</span><b id="waveHeight">--</b></div>
+      <div class="metric"><span>水温</span><b id="waterTemp">--</b></div>
+      <div class="bestBox"><span>おすすめ</span><b id="bestTime1">--:--〜--:--</b><b id="bestTime2">--:--〜--:--</b></div>
+    </section>
+
+    <section class="pointsPanel">
+      <div id="pointGrid" class="pointGrid"></div>
+    </section>
+  </main>
+
+  <dialog id="mapDialog" class="mapDialog">
+    <div class="mapPanel">
+      <div class="mapHead">
+        <button id="mapClose" class="smallBtn">閉じる</button>
+        <strong>MAPで釣り場登録</strong>
+        <button id="nearButton" class="smallBtn primary">近い順</button>
+      </div>
+      <div class="prefChips" id="prefChips"></div>
+      <div class="typeChips" id="typeChips"></div>
+      <div id="map" class="mapBox"></div>
+      <div class="mapInfo">
+        <div><b id="mapSpotName">ピンを選択</b><span id="mapSpotMeta">6県の釣り場から選べます</span></div>
+        <button id="registerMapSpot" class="yellowBtn" disabled>登録</button>
+        <button id="openGoogleMap" class="smallBtn" disabled>Google</button>
+      </div>
+      <div class="spotList" id="spotList"></div>
+    </div>
+  </dialog>
+
+  <dialog id="settingsDialog" class="settingsDialog">
+    <form method="dialog" class="settingsPanel">
+      <div class="dialogHead"><strong>マイポイント管理</strong><button value="close">×</button></div>
+      <p class="hint">9地点までホーム画面に表示します。MAPで釣り場を選ぶと、空きがあれば追加、満杯なら現在表示中の地点と入れ替えます。</p>
+      <div id="manageList" class="manageList"></div>
+      <button id="resetPoints" type="button" value="" class="wideBtn">初期9地点に戻す</button>
+      <button value="close" class="wideBtn">閉じる</button>
+    </form>
+  </dialog>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+'use strict';
+
+const PREFS = ['愛知県','三重県','静岡県','和歌山県','福井県','石川県'];
+const TYPES = ['すべて','港','河口','サーフ','海釣り公園','堤防'];
+
+const SPOTS = [
+  // 愛知県
+  {name:'名古屋港', prefecture:'愛知県', area:'名古屋市', type:'港', lat:35.073, lon:136.881, amp:67, base:132, phase:.15},
+  {name:'山崎川河口', prefecture:'愛知県', area:'名古屋市', type:'河口', lat:35.080, lon:136.884, amp:65, base:130, phase:.15},
+  {name:'新舞子', prefecture:'愛知県', area:'知多市', type:'堤防', lat:34.949, lon:136.825, amp:62, base:126, phase:.08},
+  {name:'常滑港', prefecture:'愛知県', area:'常滑市', type:'港', lat:34.887, lon:136.831, amp:60, base:124, phase:.04},
+  {name:'りんくう釣り護岸', prefecture:'愛知県', area:'常滑市', type:'堤防', lat:34.886, lon:136.823, amp:60, base:124, phase:.04},
+  {name:'碧南海釣り広場', prefecture:'愛知県', area:'碧南市', type:'海釣り公園', lat:34.844, lon:136.980, amp:58, base:121, phase:-.02},
+  {name:'衣浦港', prefecture:'愛知県', area:'半田市', type:'港', lat:34.876, lon:136.960, amp:60, base:123, phase:-.02},
+  {name:'亀崎港', prefecture:'愛知県', area:'半田市', type:'港', lat:34.922, lon:136.962, amp:61, base:124, phase:-.01},
+  {name:'一色漁港', prefecture:'愛知県', area:'西尾市', type:'港', lat:34.789, lon:137.014, amp:56, base:118, phase:-.10},
+  {name:'西浦港', prefecture:'愛知県', area:'蒲郡市', type:'港', lat:34.778, lon:137.176, amp:55, base:115, phase:-.18},
+  {name:'豊浜釣り桟橋', prefecture:'愛知県', area:'南知多町', type:'海釣り公園', lat:34.702, lon:136.927, amp:55, base:113, phase:-.18},
+  {name:'師崎港', prefecture:'愛知県', area:'南知多町', type:'港', lat:34.700, lon:136.974, amp:54, base:112, phase:-.20},
+  {name:'伊良湖港', prefecture:'愛知県', area:'田原市', type:'港', lat:34.584, lon:137.018, amp:52, base:105, phase:-.35},
+  {name:'赤羽根港', prefecture:'愛知県', area:'田原市', type:'港', lat:34.609, lon:137.198, amp:50, base:103, phase:-.55},
+  {name:'小松原海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.676, lon:137.394, amp:48, base:100, phase:-.72},
+  {name:'伊古部海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.668, lon:137.437, amp:48, base:100, phase:-.74},
+  {name:'表浜海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.667, lon:137.465, amp:48, base:100, phase:-.76},
+  {name:'佐久島西港', prefecture:'愛知県', area:'西尾市', type:'港', lat:34.728, lon:137.037, amp:54, base:114, phase:-.14},
+
+  // 三重県
+  {name:'鈴鹿漁港', prefecture:'三重県', area:'鈴鹿市', type:'港', lat:34.840, lon:136.606, amp:64, base:124, phase:.18},
+  {name:'白子漁港', prefecture:'三重県', area:'鈴鹿市', type:'港', lat:34.833, lon:136.600, amp:64, base:123, phase:.18},
+  {name:'千代崎漁港', prefecture:'三重県', area:'鈴鹿市', type:'港', lat:34.857, lon:136.616, amp:64, base:124, phase:.18},
+  {name:'四日市港', prefecture:'三重県', area:'四日市市', type:'港', lat:34.948, lon:136.653, amp:66, base:130, phase:.22},
+  {name:'霞ヶ浦ふ頭', prefecture:'三重県', area:'四日市市', type:'堤防', lat:34.982, lon:136.660, amp:66, base:130, phase:.22},
+  {name:'磯津漁港', prefecture:'三重県', area:'四日市市', type:'港', lat:34.905, lon:136.640, amp:65, base:128, phase:.20},
+  {name:'長良川河口', prefecture:'三重県', area:'桑名市', type:'河口', lat:35.049, lon:136.700, amp:68, base:136, phase:.25},
+  {name:'木曽川河口', prefecture:'三重県', area:'桑名市', type:'河口', lat:35.041, lon:136.722, amp:68, base:136, phase:.25},
+  {name:'津ヨットハーバー', prefecture:'三重県', area:'津市', type:'堤防', lat:34.704, lon:136.534, amp:62, base:116, phase:.05},
+  {name:'香良洲海岸', prefecture:'三重県', area:'津市', type:'サーフ', lat:34.661, lon:136.537, amp:60, base:114, phase:0},
+  {name:'日本鋼管突堤', prefecture:'三重県', area:'津市', type:'堤防', lat:34.641, lon:136.541, amp:60, base:113, phase:-.02},
+  {name:'松阪港', prefecture:'三重県', area:'松阪市', type:'港', lat:34.589, lon:136.570, amp:59, base:112, phase:-.05},
+  {name:'鳥羽港', prefecture:'三重県', area:'鳥羽市', type:'港', lat:34.486, lon:136.846, amp:52, base:106, phase:-.22},
+  {name:'答志島', prefecture:'三重県', area:'鳥羽市', type:'堤防', lat:34.520, lon:136.891, amp:51, base:105, phase:-.25},
+  {name:'古和浦', prefecture:'三重県', area:'南伊勢町', type:'港', lat:34.229, lon:136.521, amp:48, base:100, phase:-.45},
+  {name:'尾鷲港', prefecture:'三重県', area:'尾鷲市', type:'港', lat:34.072, lon:136.208, amp:46, base:96, phase:-.60},
+  {name:'熊野大泊海岸', prefecture:'三重県', area:'熊野市', type:'サーフ', lat:33.900, lon:136.124, amp:45, base:95, phase:-.70},
+
+  // 静岡県
+  {name:'浜名湖新居', prefecture:'静岡県', area:'湖西市', type:'海釣り公園', lat:34.690, lon:137.563, amp:46, base:94, phase:-.75},
+  {name:'新居海釣公園', prefecture:'静岡県', area:'湖西市', type:'海釣り公園', lat:34.689, lon:137.564, amp:46, base:94, phase:-.75},
+  {name:'今切口', prefecture:'静岡県', area:'湖西市', type:'堤防', lat:34.682, lon:137.591, amp:47, base:95, phase:-.78},
+  {name:'舞阪港', prefecture:'静岡県', area:'浜松市', type:'港', lat:34.682, lon:137.617, amp:47, base:95, phase:-.80},
+  {name:'弁天島', prefecture:'静岡県', area:'浜松市', type:'堤防', lat:34.693, lon:137.604, amp:47, base:95, phase:-.78},
+  {name:'天竜川河口', prefecture:'静岡県', area:'浜松市', type:'河口', lat:34.650, lon:137.817, amp:50, base:100, phase:-1.06},
+  {name:'福田漁港', prefecture:'静岡県', area:'磐田市', type:'港', lat:34.670, lon:137.922, amp:50, base:100, phase:-1.15},
+  {name:'太田川河口', prefecture:'静岡県', area:'磐田市', type:'河口', lat:34.666, lon:137.905, amp:50, base:100, phase:-1.15},
+  {name:'御前崎港', prefecture:'静岡県', area:'御前崎市', type:'港', lat:34.605, lon:138.218, amp:48, base:98, phase:-1.35},
+  {name:'相良海岸', prefecture:'静岡県', area:'牧之原市', type:'サーフ', lat:34.689, lon:138.219, amp:48, base:98, phase:-1.30},
+  {name:'焼津港', prefecture:'静岡県', area:'焼津市', type:'港', lat:34.866, lon:138.327, amp:46, base:96, phase:-1.45},
+  {name:'用宗港', prefecture:'静岡県', area:'静岡市', type:'港', lat:34.920, lon:138.361, amp:46, base:96, phase:-1.50},
+  {name:'清水港', prefecture:'静岡県', area:'静岡市', type:'港', lat:35.019, lon:138.502, amp:44, base:94, phase:-1.55},
+  {name:'三保海岸', prefecture:'静岡県', area:'静岡市', type:'サーフ', lat:35.000, lon:138.522, amp:44, base:94, phase:-1.55},
+  {name:'沼津港', prefecture:'静岡県', area:'沼津市', type:'港', lat:35.084, lon:138.860, amp:42, base:90, phase:-1.80},
+  {name:'静浦港', prefecture:'静岡県', area:'沼津市', type:'港', lat:35.034, lon:138.898, amp:42, base:90, phase:-1.82},
+  {name:'熱海港', prefecture:'静岡県', area:'熱海市', type:'港', lat:35.095, lon:139.076, amp:40, base:88, phase:-1.96},
+  {name:'伊東港', prefecture:'静岡県', area:'伊東市', type:'港', lat:34.973, lon:139.099, amp:40, base:88, phase:-2.0},
+
+  // 和歌山県
+  {name:'紀ノ川河口', prefecture:'和歌山県', area:'和歌山市', type:'河口', lat:34.230, lon:135.117, amp:52, base:103, phase:.35},
+  {name:'青岸', prefecture:'和歌山県', area:'和歌山市', type:'堤防', lat:34.218, lon:135.133, amp:52, base:103, phase:.34},
+  {name:'加太港', prefecture:'和歌山県', area:'和歌山市', type:'港', lat:34.277, lon:135.072, amp:50, base:101, phase:.30},
+  {name:'田ノ浦漁港', prefecture:'和歌山県', area:'和歌山市', type:'港', lat:34.185, lon:135.164, amp:52, base:102, phase:.30},
+  {name:'雑賀崎漁港', prefecture:'和歌山県', area:'和歌山市', type:'港', lat:34.188, lon:135.148, amp:52, base:102, phase:.30},
+  {name:'和歌山マリーナシティ', prefecture:'和歌山県', area:'和歌山市', type:'海釣り公園', lat:34.153, lon:135.179, amp:52, base:102, phase:.27},
+  {name:'海南港', prefecture:'和歌山県', area:'海南市', type:'港', lat:34.158, lon:135.203, amp:52, base:102, phase:.25},
+  {name:'下津港', prefecture:'和歌山県', area:'海南市', type:'港', lat:34.113, lon:135.153, amp:51, base:101, phase:.22},
+  {name:'有田川河口', prefecture:'和歌山県', area:'有田市', type:'河口', lat:34.083, lon:135.106, amp:50, base:100, phase:.20},
+  {name:'湯浅広港', prefecture:'和歌山県', area:'湯浅町', type:'港', lat:34.035, lon:135.167, amp:50, base:100, phase:.16},
+  {name:'由良海つり公園', prefecture:'和歌山県', area:'由良町', type:'海釣り公園', lat:33.977, lon:135.088, amp:49, base:99, phase:.08},
+  {name:'日高港', prefecture:'和歌山県', area:'御坊市', type:'港', lat:33.882, lon:135.152, amp:48, base:98, phase:0},
+  {name:'煙樹ヶ浜', prefecture:'和歌山県', area:'美浜町', type:'サーフ', lat:33.886, lon:135.104, amp:48, base:98, phase:0},
+  {name:'天神崎', prefecture:'和歌山県', area:'田辺市', type:'堤防', lat:33.725, lon:135.340, amp:46, base:96, phase:-.18},
+  {name:'串本港', prefecture:'和歌山県', area:'串本町', type:'港', lat:33.472, lon:135.784, amp:44, base:94, phase:-.55},
+  {name:'勝浦港', prefecture:'和歌山県', area:'那智勝浦町', type:'港', lat:33.625, lon:135.941, amp:44, base:94, phase:-.68},
+
+  // 福井県
+  {name:'敦賀新港', prefecture:'福井県', area:'敦賀市', type:'港', lat:35.672, lon:136.064, amp:22, base:38, phase:.20},
+  {name:'敦賀港', prefecture:'福井県', area:'敦賀市', type:'港', lat:35.657, lon:136.073, amp:22, base:38, phase:.20},
+  {name:'気比の松原', prefecture:'福井県', area:'敦賀市', type:'サーフ', lat:35.651, lon:136.055, amp:22, base:38, phase:.18},
+  {name:'菅浜漁港', prefecture:'福井県', area:'美浜町', type:'港', lat:35.646, lon:135.944, amp:21, base:37, phase:.12},
+  {name:'日向湖', prefecture:'福井県', area:'美浜町', type:'堤防', lat:35.616, lon:135.896, amp:21, base:37, phase:.08},
+  {name:'小浜港', prefecture:'福井県', area:'小浜市', type:'港', lat:35.492, lon:135.746, amp:21, base:37, phase:-.04},
+  {name:'阿納漁港', prefecture:'福井県', area:'小浜市', type:'港', lat:35.542, lon:135.727, amp:21, base:37, phase:-.05},
+  {name:'若狭大島', prefecture:'福井県', area:'おおい町', type:'堤防', lat:35.525, lon:135.645, amp:21, base:36, phase:-.08},
+  {name:'音海大波止', prefecture:'福井県', area:'高浜町', type:'堤防', lat:35.526, lon:135.507, amp:21, base:36, phase:-.14},
+  {name:'高浜漁港', prefecture:'福井県', area:'高浜町', type:'港', lat:35.495, lon:135.551, amp:21, base:36, phase:-.12},
+  {name:'越前海岸', prefecture:'福井県', area:'越前町', type:'堤防', lat:35.974, lon:135.977, amp:22, base:38, phase:.28},
+  {name:'梅浦漁港', prefecture:'福井県', area:'越前町', type:'港', lat:35.963, lon:135.965, amp:22, base:38, phase:.26},
+  {name:'鷹巣漁港', prefecture:'福井県', area:'福井市', type:'港', lat:36.102, lon:136.060, amp:23, base:39, phase:.35},
+  {name:'三国港', prefecture:'福井県', area:'坂井市', type:'港', lat:36.217, lon:136.145, amp:23, base:40, phase:.42},
+  {name:'九頭竜川河口', prefecture:'福井県', area:'坂井市', type:'河口', lat:36.224, lon:136.147, amp:23, base:40, phase:.42},
+
+  // 石川県
+  {name:'金沢港', prefecture:'石川県', area:'金沢市', type:'港', lat:36.616, lon:136.603, amp:24, base:42, phase:.52},
+  {name:'大野川河口', prefecture:'石川県', area:'金沢市', type:'河口', lat:36.608, lon:136.601, amp:24, base:42, phase:.52},
+  {name:'犀川河口', prefecture:'石川県', area:'金沢市', type:'河口', lat:36.586, lon:136.585, amp:24, base:42, phase:.50},
+  {name:'内灘放水路', prefecture:'石川県', area:'内灘町', type:'河口', lat:36.653, lon:136.625, amp:24, base:42, phase:.55},
+  {name:'手取川河口', prefecture:'石川県', area:'白山市', type:'河口', lat:36.516, lon:136.522, amp:24, base:41, phase:.48},
+  {name:'安宅海岸', prefecture:'石川県', area:'小松市', type:'サーフ', lat:36.406, lon:136.408, amp:23, base:41, phase:.42},
+  {name:'橋立漁港', prefecture:'石川県', area:'加賀市', type:'港', lat:36.330, lon:136.315, amp:23, base:40, phase:.36},
+  {name:'千里浜', prefecture:'石川県', area:'羽咋市', type:'サーフ', lat:36.913, lon:136.779, amp:24, base:42, phase:.65},
+  {name:'七尾港', prefecture:'石川県', area:'七尾市', type:'港', lat:37.047, lon:136.963, amp:19, base:35, phase:.72},
+  {name:'能登島', prefecture:'石川県', area:'七尾市', type:'堤防', lat:37.126, lon:136.999, amp:19, base:35, phase:.75},
+  {name:'穴水湾', prefecture:'石川県', area:'穴水町', type:'港', lat:37.229, lon:136.906, amp:19, base:35, phase:.77},
+  {name:'富来漁港', prefecture:'石川県', area:'志賀町', type:'港', lat:37.141, lon:136.716, amp:22, base:39, phase:.75},
+  {name:'輪島港', prefecture:'石川県', area:'輪島市', type:'港', lat:37.401, lon:136.900, amp:22, base:39, phase:.88},
+  {name:'宇出津港', prefecture:'石川県', area:'能登町', type:'港', lat:37.306, lon:137.148, amp:20, base:36, phase:.92},
+  {name:'珠洲飯田港', prefecture:'石川県', area:'珠洲市', type:'港', lat:37.436, lon:137.262, amp:20, base:36, phase:1.0}
+];
+
+const INITIAL_NAMES = ['名古屋港','鈴鹿漁港','四日市港','長良川河口','新舞子','赤羽根港','伊古部海岸','浜名湖新居','天竜川河口'];
+const DEFAULT_POINTS = INITIAL_NAMES.map(n => ({...SPOTS.find(s => s.name === n)}));
+const $ = id => document.getElementById(id);
+
+const state = {
+  points: loadPoints(),
+  selectedName: localStorage.getItem('ftbi.selected') || '名古屋港',
+  favorites: new Set(JSON.parse(localStorage.getItem('ftbi.favorites') || '["名古屋港"]')),
+  dateOffset: 0,
+  weather: null,
+  marine: null,
+  map: null,
+  markers: [],
+  mapPref: '愛知県',
+  mapType: 'すべて',
+  chosenSpot: null,
+  userLocation: null
+};
+
+function loadPoints(){
+  try {
+    const raw = JSON.parse(localStorage.getItem('ftbi.points'));
+    if(Array.isArray(raw) && raw.length) return raw;
+  } catch(e) {}
+  return DEFAULT_POINTS;
+}
+function savePoints(){ localStorage.setItem('ftbi.points', JSON.stringify(state.points)); }
+function saveFavs(){ localStorage.setItem('ftbi.favorites', JSON.stringify([...state.favorites])); }
+function selectedPoint(){ return state.points.find(p=>p.name===state.selectedName) || state.points[0] || DEFAULT_POINTS[0]; }
+function selectedDate(){ const d = new Date(); d.setDate(d.getDate()+state.dateOffset); d.setHours(0,0,0,0); return d; }
+function ymd(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtDate(d){ const w='日月火水木金土'[d.getDay()]; return `${d.getMonth()+1}月${d.getDate()}日(${w})`; }
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+function hm(hour){ let h=Math.floor(hour)%24; let m=Math.round((hour-Math.floor(hour))*60); if(m===60){h=(h+1)%24;m=0;} return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+function currentHour(){ if(state.dateOffset!==0) return 12; const d=new Date(); return d.getHours()+d.getMinutes()/60; }
+function degDistanceKm(aLat,aLon,bLat,bLon){ const R=6371; const toRad=x=>x*Math.PI/180; const dLat=toRad(bLat-aLat); const dLon=toRad(bLon-aLon); const aa=Math.sin(dLat/2)**2+Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(aa),Math.sqrt(1-aa)); }
+
+function moonAge(date){
+  const synodic=29.530588853;
+  const ref=Date.UTC(2000,0,6,18,14,0);
+  const days=(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),12)-ref)/86400000;
+  return ((days%synodic)+synodic)%synodic;
+}
+function tideClass(age){
+  if(age<1.5||age>28||(age>13.2&&age<16.2)) return '大潮';
+  if((age>=9.5&&age<10.8)||(age>=24.2&&age<25.5)) return '長潮';
+  if((age>=10.8&&age<12.2)||(age>=25.5&&age<27)) return '若潮';
+  if((age>=6.7&&age<9.5)||(age>=21.4&&age<24.2)) return '小潮';
+  return '中潮';
+}
+function tideFactor(age){ const spring=(Math.cos(2*Math.PI*age/14.765)+1)/2; return 0.62+spring*0.55; }
+function tideHeight(p,hour,age){ const amp=(p.amp||50)*tideFactor(age); const h=hour+(p.phase||0)+age*.78; return (p.base||100)+amp*(Math.sin(2*Math.PI*h/12.42)+.22*Math.sin(2*Math.PI*(h-2.4)/24)); }
+function tideSeries(p,date){
+  const age=moonAge(date); const data=[];
+  for(let h=0;h<=24.001;h+=.25) data.push({hour:h,height:tideHeight(p,h,age)});
+  const extrema=[];
+  for(let i=1;i<data.length-1;i++){
+    const prev=data[i-1].height, cur=data[i].height, next=data[i+1].height;
+    if(cur>=prev&&cur>=next) extrema.push({...data[i],type:'high'});
+    if(cur<=prev&&cur<=next) extrema.push({...data[i],type:'low'});
+  }
+  return {age,data,extrema};
+}
+function sunTimes(date, lon){
+  const start=new Date(date.getFullYear(),0,0); const n=Math.floor((date-start)/86400000);
+  const seasonal=-.75*Math.cos((n-172)/365*2*Math.PI);
+  const sunrise=5.02+seasonal-(lon-136.8)*.03;
+  const sunset=18.15-seasonal-(lon-136.8)*.03;
+  return {sunrise:clamp(sunrise,4.4,7.1),sunset:clamp(sunset,16.8,19.3)};
+}
+function moonTimes(age){ const rise=(6+age*.82)%24; return {rise,set:(rise+12.2)%24}; }
+function weatherIcon(code,hour){
+  if(code===0) return hour>=18||hour<5?'🌙':'☀️';
+  if([1,2].includes(code)) return hour>=18||hour<5?'🌙':'🌤️';
+  if(code===3) return '☁️';
+  if([45,48].includes(code)) return '🌫️';
+  if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return '🌧️';
+  if([71,73,75,77,85,86].includes(code)) return '❄️';
+  if([95,96,99].includes(code)) return '⛈️';
+  return '☁️';
+}
+function weatherText(code){
+  if(code===0) return '晴れ'; if([1,2].includes(code)) return '晴れ時々くもり'; if(code===3) return 'くもり';
+  if([45,48].includes(code)) return '霧'; if([51,53,55].includes(code)) return '小雨';
+  if([61,63,65,80,81,82].includes(code)) return '雨'; if([95,96,99].includes(code)) return '雷雨';
+  return 'くもり';
+}
+function compass(deg){
+  if(deg==null || Number.isNaN(deg)) return '--';
+  const dirs=['北','北北東','北東','東北東','東','東南東','南東','南南東','南','南南西','南西','西南西','西','西北西','北西','北北西'];
+  return dirs[Math.round(deg/22.5)%16];
+}
+function shortDir(deg){ const d=compass(deg); return d.replace('北北','北').replace('南南','南').replace('東北','東').replace('東南','東').replace('西北','西').replace('西南','西'); }
+function svgEl(name,attrs={}){ const el=document.createElementNS('http://www.w3.org/2000/svg',name); Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v)); return el; }
+function linePath(points){ return points.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '); }
+
+function drawTide(tide){
+  const svg=$('tideSvg'); svg.innerHTML='';
+  const W=390,H=255, L=42,R=16,T=16,B=28; const plotW=W-L-R, plotH=H-T-B;
+  const vals=tide.data.map(d=>d.height); const min=Math.floor((Math.min(...vals)-20)/50)*50; const max=Math.ceil((Math.max(...vals)+20)/50)*50;
+  const x=h=>L+(h/24)*plotW; const y=v=>T+(max-v)/(max-min)*plotH;
+  svg.append(svgEl('rect',{x:0,y:0,width:W,height:H,fill:'transparent'}));
+  for(let cm=min;cm<=max;cm+=50){ const yy=y(cm); svg.append(svgEl('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'rgba(255,255,255,.18)','stroke-dasharray':'3 4'})); const tx=svgEl('text',{x:6,y:yy+4,class:'axisText'}); tx.textContent=`${cm}cm`; svg.append(tx); }
+  for(let h=0;h<=24;h+=3){ const xx=x(h); svg.append(svgEl('line',{x1:xx,y1:T,x2:xx,y2:H-B,stroke:'rgba(255,255,255,.18)','stroke-dasharray': h%6===0?'':'4 5'})); const tx=svgEl('text',{x:xx-6,y:H-8,class:'axisText'}); tx.textContent=h===24?'24時':String(h); svg.append(tx); }
+  svg.append(svgEl('path',{d:linePath(tide.data.map(d=>({x:x(d.hour),y:y(d.height)})))+` L ${x(24)} ${H-B} L ${x(0)} ${H-B} Z`,fill:'rgba(20,205,236,.25)'}));
+  svg.append(svgEl('path',{d:linePath(tide.data.map(d=>({x:x(d.hour),y:y(d.height)}))),fill:'none',stroke:'#35e6ff','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'}));
+  const p=selectedPoint(); const sun=sunTimes(selectedDate(),p.lon); const moon=moonTimes(tide.age);
+  [{h:sun.sunrise,c:'#ffd84a',label:'☀'}, {h:sun.sunset,c:'#ff8b2a',label:'🌇'}, {h:moon.rise,c:'#dff2ff',label:'☾'}].forEach(m=>{ const xx=x(m.h); svg.append(svgEl('rect',{x:xx-11,y:T,width:22,height:plotH,fill:m.c,opacity:.14})); svg.append(svgEl('line',{x1:xx,y1:T,x2:xx,y2:H-B,stroke:m.c,'stroke-dasharray':'3 4','stroke-width':1.2})); const t=svgEl('text',{x:xx-8,y:T+13,class:'axisText'}); t.textContent=m.label; svg.append(t); });
+  svg.append(svgEl('circle',{cx:x(currentHour()),cy:y(tideHeight(p,currentHour(),tide.age)),r:9,fill:'#ff2e31',stroke:'#fff','stroke-width':3}));
+  const curX=x(currentHour()), curY=y(tideHeight(p,currentHour(),tide.age));
+  const g=svgEl('g'); g.append(svgEl('rect',{x:clamp(curX+10,L,W-72),y:clamp(curY-38,T,H-68),width:62,height:42,rx:6,fill:'#ff2e31',stroke:'#fff'})); let t=svgEl('text',{x:clamp(curX+41,L+31,W-41),y:clamp(curY-20,T+18,H-50),class:'currentText','text-anchor':'middle'}); t.textContent='現在'; g.append(t); t=svgEl('text',{x:clamp(curX+41,L+31,W-41),y:clamp(curY-4,T+34,H-34),class:'currentText','text-anchor':'middle'}); t.textContent=`${Math.round(tideHeight(p,currentHour(),tide.age))}cm`; g.append(t); svg.append(g);
+  tide.extrema.slice(0,4).forEach(e=>{ const xx=x(e.hour), yy=y(e.height); svg.append(svgEl('circle',{cx:xx,cy:yy,r:6,fill:e.type==='high'?'#145bc3':'#062b50',stroke:'#fff','stroke-width':2})); const bw=58,bh=35,bx=clamp(xx-bw/2,L,W-R-bw),by=e.type==='high'?clamp(yy-43,T,H-B-bh):clamp(yy+9,T,H-B-bh); const gg=svgEl('g'); gg.append(svgEl('rect',{x:bx,y:by,width:bw,height:bh,rx:6,fill:e.type==='high'?'#126ce0':'#eaf6ff',stroke:'#70c8ff','stroke-width':1.5})); let tt=svgEl('text',{x:bx+bw/2,y:by+14,class:e.type==='high'?'calloutTime':'calloutCm','text-anchor':'middle'}); tt.textContent=hm(e.hour); gg.append(tt); tt=svgEl('text',{x:bx+bw/2,y:by+29,class:e.type==='high'?'calloutTime':'calloutCm','text-anchor':'middle'}); tt.textContent=`${Math.round(e.height)}cm`; gg.append(tt); svg.append(gg); });
+  for(let i=0;i<8;i++){ const fx=L+12+i*38, fy=H-B-18-(i%3)*10; svg.append(svgEl('path',{class:'fish',d:`M${fx} ${fy} q14 -8 28 0 q-14 8 -28 0 M${fx+26} ${fy} l8 -6 v12 z`})); }
+}
+
+function nearestHourly(hourly,key,hour){
+  if(!hourly || !hourly.time || !hourly[key]) return null;
+  const target=`${ymd(selectedDate())}T${String(Math.min(23,Math.floor(hour))).padStart(2,'0')}:00`;
+  let idx=hourly.time.indexOf(target); if(idx<0) idx=Math.min(hourly[key].length-1,Math.max(0,Math.round(hour)));
+  return hourly[key][idx];
+}
+function fallbackWeather(p){
+  const date=ymd(selectedDate());
+  const wh={time:[],temperature_2m:[],relative_humidity_2m:[],precipitation:[],weather_code:[],wind_speed_10m:[],wind_direction_10m:[],wind_gusts_10m:[],surface_pressure:[]};
+  const mh={time:[],wave_height:[],wave_direction:[],sea_surface_temperature:[]};
+  for(let h=0;h<24;h++){
+    wh.time.push(`${date}T${String(h).padStart(2,'0')}:00`);
+    wh.temperature_2m.push(+(23+4*Math.sin((h-7)/24*2*Math.PI)+(p.prefecture==='静岡県'?1:0)).toFixed(1));
+    wh.relative_humidity_2m.push(Math.round(70-8*Math.sin((h-8)/24*2*Math.PI)));
+    wh.precipitation.push(0); wh.weather_code.push(h>18||h<5?1:2);
+    wh.wind_speed_10m.push(+(3.5+2.1*Math.sin((h-10)/24*2*Math.PI)).toFixed(1));
+    wh.wind_direction_10m.push(150+50*Math.sin(h/24*2*Math.PI)); wh.wind_gusts_10m.push(+(5+2*Math.sin((h-10)/24*2*Math.PI)).toFixed(1)); wh.surface_pressure.push(1015);
+    mh.time.push(wh.time[h]); mh.wave_height.push(+(p.prefecture==='愛知県'?0.25:p.prefecture==='三重県'?0.35:p.prefecture==='静岡県'?0.45:0.5).toFixed(1)); mh.wave_direction.push(150); mh.sea_surface_temperature.push(+(23+1.2*Math.sin((h-8)/24*2*Math.PI)).toFixed(1));
+  }
+  return {weather:{hourly:wh},marine:{hourly:mh}};
+}
+async function fetchData(p){
+  const date=ymd(selectedDate());
+  const wParams=new URLSearchParams({latitude:p.lat,longitude:p.lon,timezone:'Asia/Tokyo',start_date:date,end_date:date,hourly:'temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure'});
+  const mParams=new URLSearchParams({latitude:p.lat,longitude:p.lon,timezone:'Asia/Tokyo',start_date:date,end_date:date,hourly:'wave_height,wave_direction,sea_surface_temperature'});
+  try{
+    const [w,m]=await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?${wParams}`,{cache:'no-store'}),fetch(`https://marine-api.open-meteo.com/v1/marine?${mParams}`,{cache:'no-store'})]);
+    if(!w.ok||!m.ok) throw new Error('api');
+    state.weather=await w.json(); state.marine=await m.json();
+  }catch(e){ const fb=fallbackWeather(p); state.weather=fb.weather; state.marine=fb.marine; }
+}
+function hourlyValues(hour){
+  const wh=state.weather?.hourly||{}, mh=state.marine?.hourly||{};
+  return {temp:nearestHourly(wh,'temperature_2m',hour),hum:nearestHourly(wh,'relative_humidity_2m',hour),rain:nearestHourly(wh,'precipitation',hour),code:nearestHourly(wh,'weather_code',hour),wind:nearestHourly(wh,'wind_speed_10m',hour),dir:nearestHourly(wh,'wind_direction_10m',hour),gust:nearestHourly(wh,'wind_gusts_10m',hour),pressure:nearestHourly(wh,'surface_pressure',hour),wave:nearestHourly(mh,'wave_height',hour),water:nearestHourly(mh,'sea_surface_temperature',hour),waveDir:nearestHourly(mh,'wave_direction',hour)};
+}
+function scoreAt(hour,tide){
+  const v=hourlyValues(hour), p=selectedPoint();
+  const move=Math.abs(tideHeight(p,Math.min(24,hour+1),tide.age)-tideHeight(p,hour,tide.age));
+  const sun=sunTimes(selectedDate(),p.lon);
+  let s=38; s+=clamp(move/18,0,1)*24; s+=Math.max(0,1-Math.min(Math.abs(hour-sun.sunrise),Math.abs(hour-sun.sunset))/2.2)*18;
+  s+=(v.wind??3)<=5?13:(v.wind<=8?4:-10); s+=(v.wave??.3)<=.6?13:(v.wave<=1?5:-8); s+=(v.rain??0)<=.2?5:-8; s+=['大潮','中潮'].includes(tideClass(tide.age))?7:0;
+  return Math.round(clamp(s,0,100));
+}
+function bestWindows(tide){
+  const arr=[]; for(let h=0;h<24;h+=.5) arr.push({h,s:scoreAt(h,tide)});
+  const picks=[]; for(const row of [...arr].sort((a,b)=>b.s-a.s)){ if(picks.every(p=>Math.abs(p.h-row.h)>4)) picks.push(row); if(picks.length===2) break; }
+  return picks.map(p=>({start:clamp(p.h-1.25,0,23.5),end:clamp(p.h+1.25,.5,24),score:p.s})).sort((a,b)=>a.start-b.start);
+}
+function renderHourly(){
+  const hours=[0,3,6,9,12,15,18,21,23]; const grid=$('hourlyGrid'); grid.innerHTML='';
+  const heads=['時間','天気','風向','風速','波高','水温'];
+  heads.forEach((h,r)=>{ const d=document.createElement('div'); d.textContent=h; d.className='rowHead'; grid.append(d); hours.forEach(hour=>{ const v=hourlyValues(hour); const c=document.createElement('div'); if(r===0){c.textContent=hour===23?'23':String(hour); c.className='hourCell'} if(r===1){c.textContent=weatherIcon(v.code,hour); c.className='weatherCell'} if(r===2){c.innerHTML=`<span class="arrow" style="transform:rotate(${v.dir||0}deg)">➤</span><small>${shortDir(v.dir)}</small>`; c.className='numCell'} if(r===3){c.textContent=`${(v.wind??0).toFixed(1)}`; c.className='numCell'} if(r===4){c.textContent=`${(v.wave??0).toFixed(1)}m`; c.className='waveCell'} if(r===5){c.textContent=`${(v.water??0).toFixed(1)}°`; c.className='tempCell'} grid.append(c); }); });
+}
+function renderPoints(){
+  const grid=$('pointGrid'); grid.innerHTML='';
+  state.points.slice(0,9).forEach(p=>{ const b=document.createElement('button'); b.className='pointBtn'+(p.name===state.selectedName?' active':''); b.innerHTML=`<span>${p.name}</span><small>${p.prefecture.replace('県','')}</small><i class="pin">${state.favorites.has(p.name)?'★':'☆'}</i>`; b.onclick=()=>{state.selectedName=p.name;localStorage.setItem('ftbi.selected',p.name); renderAll();}; grid.append(b); });
+}
+function renderManageList(){
+  const list=$('manageList'); if(!list) return; list.innerHTML='';
+  state.points.slice(0,9).forEach(p=>{ const row=document.createElement('div'); row.className='manageRow'; row.innerHTML=`<div class="manageName">${p.name}<small>　${p.prefecture} ${p.type||''}</small></div><button class="deleteBtn">削</button>`; row.querySelector('button').onclick=()=>{ state.points=state.points.filter(x=>x.name!==p.name); if(state.selectedName===p.name) state.selectedName=state.points[0]?.name||'名古屋港'; savePoints(); renderAll(); renderManageList(); }; list.append(row); });
+}
+async function renderAll(){
+  const p=selectedPoint(); $('dateButton').textContent=fmtDate(selectedDate()); $('prefName').textContent=p.prefecture; $('pointName').textContent=p.name;
+  $('favButton').textContent=state.favorites.has(p.name)?'★':'☆';
+  const tide=tideSeries(p,selectedDate()); const ch=tideClass(tide.age); $('tideType').textContent=ch; $('moonAge').textContent=tide.age.toFixed(1);
+  const sun=sunTimes(selectedDate(),p.lon), moon=moonTimes(tide.age); $('sunrise').textContent=hm(sun.sunrise); $('sunset').textContent=hm(sun.sunset); $('moonrise').textContent=hm(moon.rise); $('moonset').textContent=hm(moon.set);
+  const cur=tideHeight(p,currentHour(),tide.age), prev=tideHeight(p,Math.max(0,currentHour()-1),tide.age); $('currentTide').textContent=`${Math.round(cur)}cm`; $('tideDiff').textContent=`${cur-prev>=0?'↑':'↓'}${Math.abs(cur-prev).toFixed(1)}`;
+  drawTide(tide); renderPoints();
+  await fetchData(p);
+  const now=hourlyValues(currentHour()); $('weatherIcon').textContent=weatherIcon(now.code,currentHour()); $('weatherText').textContent=weatherText(now.code); $('temperature').textContent=`${(now.temp??0).toFixed(1)}℃`; $('windDir').textContent=compass(now.dir); $('windSpeed').textContent=`${(now.wind??0).toFixed(1)}m/s`; $('waveHeight').textContent=`${(now.wave??0).toFixed(1)}m`; $('waterTemp').textContent=`${(now.water??0).toFixed(1)}℃`;
+  const wins=bestWindows(tide); $('bestTime1').textContent=wins[0]?`${hm(wins[0].start)}〜${hm(wins[0].end)}`:'--'; $('bestTime2').textContent=wins[1]?`${hm(wins[1].start)}〜${hm(wins[1].end)}`:'--'; const score=scoreAt(currentHour(),tide); $('scoreBadge').textContent=score;
+  renderHourly(); renderManageList();
+}
+
+function filteredSpots(){
+  let arr=SPOTS.filter(s=>s.prefecture===state.mapPref && (state.mapType==='すべて'||s.type===state.mapType));
+  if(state.userLocation){ arr=arr.map(s=>({...s,distance:degDistanceKm(state.userLocation.lat,state.userLocation.lon,s.lat,s.lon)})).sort((a,b)=>a.distance-b.distance); }
+  return arr;
+}
+function initMap(){
+  if(state.map || !window.L) return;
+  state.map=L.map('map',{zoomControl:true,attributionControl:false}).setView([34.85,136.9],8);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(state.map);
+  state.map.on('click',e=>{
+    const custom={name:'地図で選択', prefecture:state.mapPref, area:'任意地点', type:'任意', lat:+e.latlng.lat.toFixed(6), lon:+e.latlng.lng.toFixed(6), amp:50, base:100, phase:0};
+    chooseMapSpot(custom);
+  });
+}
+function renderMapControls(){
+  const pc=$('prefChips'); pc.innerHTML=''; PREFS.forEach(pref=>{ const b=document.createElement('button'); b.className='chip'+(pref===state.mapPref?' active':''); b.textContent=pref.replace('県',''); b.onclick=()=>{state.mapPref=pref; state.userLocation=null; renderMap();}; pc.append(b); });
+  const tc=$('typeChips'); tc.innerHTML=''; TYPES.forEach(type=>{ const b=document.createElement('button'); b.className='chip'+(type===state.mapType?' active':''); b.textContent=type; b.onclick=()=>{state.mapType=type; renderMap();}; tc.append(b); });
+}
+function chooseMapSpot(s){
+  state.chosenSpot={...s}; $('mapSpotName').textContent=s.name; $('mapSpotMeta').textContent=`${s.prefecture} ${s.area} ${s.type}${s.distance?`・約${s.distance.toFixed(1)}km`:''}`; $('registerMapSpot').disabled=false; $('openGoogleMap').disabled=false;
+}
+function renderMap(){
+  renderMapControls(); initMap(); if(!state.map) return;
+  setTimeout(()=>state.map.invalidateSize(),50);
+  state.markers.forEach(m=>m.remove()); state.markers=[];
+  const arr=filteredSpots(); const bounds=[];
+  arr.forEach(s=>{
+    const marker=L.marker([s.lat,s.lon]).addTo(state.map); marker.bindPopup(`<div class="popupTitle">${s.name}</div><div class="popupMeta">${s.prefecture} ${s.area}｜${s.type}</div><div class="popupBtns"><button class="popupReg" data-reg="${s.name}">登録</button><button class="popupMap" data-map="${s.name}">Google</button></div>`); marker.on('click',()=>chooseMapSpot(s)); state.markers.push(marker); bounds.push([s.lat,s.lon]);
+  });
+  if(bounds.length) state.map.fitBounds(bounds,{padding:[24,24],maxZoom:10});
+  const list=$('spotList'); list.innerHTML='';
+  arr.forEach(s=>{ const item=document.createElement('button'); item.className='spotItem'+(state.chosenSpot?.name===s.name?' active':''); item.innerHTML=`<div><b>${s.name}</b><span>${s.prefecture} ${s.area}｜${s.type}</span></div><span class="distance">${s.distance?`${s.distance.toFixed(1)}km`:''}</span>`; item.onclick=()=>{chooseMapSpot(s); if(state.map) state.map.setView([s.lat,s.lon],13);}; list.append(item); });
+}
+function registerSpot(s){
+  const spot={...s}; if(!spot.amp){ spot.amp=50; spot.base=100; spot.phase=0; }
+  const exists=state.points.findIndex(p=>p.name===spot.name);
+  if(exists>=0){ state.points[exists]=spot; }
+  else if(state.points.length<9){ state.points.push(spot); }
+  else { const idx=Math.max(0,state.points.findIndex(p=>p.name===state.selectedName)); state.points[idx]=spot; }
+  state.selectedName=spot.name; localStorage.setItem('ftbi.selected',spot.name); savePoints(); renderAll();
+}
+function googleMapUrl(s){ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${s.name} ${s.prefecture} ${s.area}`)}`; }
+function openMapDialog(){ $('mapDialog').showModal(); setTimeout(()=>{renderMap();},80); }
+function openSettings(){ renderManageList(); $('settingsDialog').showModal(); }
+
+function setupEvents(){
+  $('prevDay').onclick=()=>{state.dateOffset=Math.max(-1,state.dateOffset-1); renderAll();};
+  $('nextDay').onclick=()=>{state.dateOffset=Math.min(14,state.dateOffset+1); renderAll();};
+  $('dateButton').onclick=()=>{ const steps=[0,1,3,7,14]; const i=steps.indexOf(state.dateOffset); state.dateOffset=steps[(i+1)%steps.length]; renderAll(); };
+  $('favButton').onclick=()=>{ const p=selectedPoint(); state.favorites.has(p.name)?state.favorites.delete(p.name):state.favorites.add(p.name); saveFavs(); renderAll(); };
+  $('mapOpen').onclick=openMapDialog; $('settingsOpen').onclick=openSettings; $('mapClose').onclick=()=>$('mapDialog').close();
+  $('registerMapSpot').onclick=()=>{ if(state.chosenSpot){ registerSpot(state.chosenSpot); $('mapDialog').close(); }};
+  $('openGoogleMap').onclick=()=>{ if(state.chosenSpot) window.open(googleMapUrl(state.chosenSpot),'_blank'); };
+  $('nearButton').onclick=()=>{ if(!navigator.geolocation){ alert('位置情報が使えません'); return; } navigator.geolocation.getCurrentPosition(pos=>{ state.userLocation={lat:pos.coords.latitude,lon:pos.coords.longitude}; renderMap(); },()=>alert('位置情報を取得できませんでした'),{enableHighAccuracy:true,timeout:10000}); };
+  $('mapDialog').addEventListener('click',e=>{ const r=e.target.closest('[data-reg]'), m=e.target.closest('[data-map]'); if(r){ const s=SPOTS.find(x=>x.name===r.dataset.reg); if(s){ registerSpot(s); $('mapDialog').close(); }} if(m){ const s=SPOTS.find(x=>x.name===m.dataset.map); if(s) window.open(googleMapUrl(s),'_blank'); }});
+  $('resetPoints').onclick=()=>{ state.points=DEFAULT_POINTS.map(p=>({...p})); state.selectedName='名古屋港'; savePoints(); localStorage.setItem('ftbi.selected',state.selectedName); renderAll(); renderManageList(); };
+}
+
+setupEvents();
+renderAll();
+
+</script>
+</body>
+</html>

@@ -254,6 +254,29 @@ function compass(deg){
   return dirs[Math.round(deg/22.5)%16];
 }
 function shortDir(deg){ const d=compass(deg); return d.replace('北北','北').replace('南南','南').replace('東北','東').replace('東南','東').replace('西北','西').replace('西南','西'); }
+
+function safetyClass(kind,value){
+  const v=Number(value);
+  if(!Number.isFinite(v)) return '';
+  if(kind==='wind'){
+    if(v<=10) return 'safeBlue';
+    if(v<=15) return 'safeYellow';
+    return 'safeRed';
+  }
+  if(kind==='wave'){
+    if(v<=1.0) return 'safeBlue';
+    if(v<=1.5) return 'safeYellow';
+    return 'safeRed';
+  }
+  return '';
+}
+function setSafetyText(id,text,kind,value){
+  const el=$(id);
+  el.textContent=text;
+  el.classList.remove('safeBlue','safeYellow','safeRed');
+  const cls=safetyClass(kind,value);
+  if(cls) el.classList.add(cls);
+}
 function svgEl(name,attrs={}){ const el=document.createElementNS('http://www.w3.org/2000/svg',name); Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v)); return el; }
 function linePath(points){ return points.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '); }
 
@@ -327,7 +350,7 @@ function bestWindows(tide){
 function renderHourly(){
   const hours=[0,3,6,9,12,15,18,21,23]; const grid=$('hourlyGrid'); grid.innerHTML='';
   const heads=['時間','天気','風向','風速','波高','水温'];
-  heads.forEach((h,r)=>{ const d=document.createElement('div'); d.textContent=h; d.className='rowHead'; grid.append(d); hours.forEach(hour=>{ const v=hourlyValues(hour); const c=document.createElement('div'); if(r===0){c.textContent=hour===23?'23':String(hour); c.className='hourCell'} if(r===1){c.textContent=weatherIcon(v.code,hour); c.className='weatherCell'} if(r===2){c.innerHTML=`<span class="arrow" style="transform:rotate(${v.dir||0}deg)">➤</span><small>${shortDir(v.dir)}</small>`; c.className='numCell'} if(r===3){c.textContent=`${(v.wind??0).toFixed(1)}`; c.className='numCell'} if(r===4){c.textContent=`${(v.wave??0).toFixed(1)}m`; c.className='waveCell'} if(r===5){c.textContent=`${(v.water??0).toFixed(1)}°`; c.className='tempCell'} grid.append(c); }); });
+  heads.forEach((h,r)=>{ const d=document.createElement('div'); d.textContent=h; d.className='rowHead'; grid.append(d); hours.forEach(hour=>{ const v=hourlyValues(hour); const c=document.createElement('div'); if(r===0){c.textContent=hour===23?'23':String(hour); c.className='hourCell'} if(r===1){c.textContent=weatherIcon(v.code,hour); c.className='weatherCell'} if(r===2){c.innerHTML=`<span class="arrow" style="transform:rotate(${v.dir||0}deg)">➤</span><small>${shortDir(v.dir)}</small>`; c.className='numCell'} if(r===3){c.textContent=`${(v.wind??0).toFixed(1)}`; c.className='numCell '+safetyClass('wind',v.wind)} if(r===4){c.textContent=`${(v.wave??0).toFixed(1)}m`; c.className='waveCell '+safetyClass('wave',v.wave)} if(r===5){c.textContent=`${(v.water??0).toFixed(1)}°`; c.className='tempCell'} grid.append(c); }); });
 }
 function renderPoints(){
   const grid=$('pointGrid'); grid.innerHTML='';
@@ -345,7 +368,7 @@ async function renderAll(){
   const cur=tideHeight(p,currentHour(),tide.age), prev=tideHeight(p,Math.max(0,currentHour()-1),tide.age); $('currentTide').textContent=`${Math.round(cur)}cm`; $('tideDiff').textContent=`${cur-prev>=0?'↑':'↓'}${Math.abs(cur-prev).toFixed(1)}`;
   drawTide(tide); renderPoints();
   await fetchData(p);
-  const now=hourlyValues(currentHour()); $('weatherIcon').textContent=weatherIcon(now.code,currentHour()); $('weatherText').textContent=weatherText(now.code); $('temperature').textContent=`${(now.temp??0).toFixed(1)}℃`; $('windDir').textContent=compass(now.dir); $('windSpeed').textContent=`${(now.wind??0).toFixed(1)}m/s`; $('waveHeight').textContent=`${(now.wave??0).toFixed(1)}m`; $('waterTemp').textContent=`${(now.water??0).toFixed(1)}℃`;
+  const now=hourlyValues(currentHour()); $('weatherIcon').textContent=weatherIcon(now.code,currentHour()); $('weatherText').textContent=weatherText(now.code); $('temperature').textContent=`${(now.temp??0).toFixed(1)}℃`; $('windDir').textContent=compass(now.dir); setSafetyText('windSpeed',`${(now.wind??0).toFixed(1)}m/s`,'wind',now.wind); setSafetyText('waveHeight',`${(now.wave??0).toFixed(1)}m`,'wave',now.wave); $('waterTemp').textContent=`${(now.water??0).toFixed(1)}℃`;
   const wins=bestWindows(tide); $('bestTime1').textContent=wins[0]?`${hm(wins[0].start)}〜${hm(wins[0].end)}`:'--'; $('bestTime2').textContent=wins[1]?`${hm(wins[1].start)}〜${hm(wins[1].end)}`:'--'; const score=scoreAt(currentHour(),tide); $('scoreBadge').textContent=score;
   renderHourly(); renderManageList();
 }
