@@ -1,597 +1,212 @@
 'use strict';
-
-const PREFS = ['愛知県','三重県','静岡県','和歌山県','福井県','石川県'];
-const TYPES = ['すべて','サーフ','河口','港','海釣り公園','堤防'];
-
-const SPOTS = [
-  // 愛知県
-  {name:'名古屋港', prefecture:'愛知県', area:'名古屋市', type:'港', lat:35.073, lon:136.881, amp:67, base:132, phase:.15},
-  {name:'山崎川河口', prefecture:'愛知県', area:'名古屋市', type:'河口', lat:35.080, lon:136.884, amp:65, base:130, phase:.15},
-  {name:'新舞子', prefecture:'愛知県', area:'知多市', type:'堤防', lat:34.949, lon:136.825, amp:62, base:126, phase:.08},
-  {name:'常滑港', prefecture:'愛知県', area:'常滑市', type:'港', lat:34.887, lon:136.831, amp:60, base:124, phase:.04},
-  {name:'りんくう釣り護岸', prefecture:'愛知県', area:'常滑市', type:'堤防', lat:34.886, lon:136.823, amp:60, base:124, phase:.04},
-  {name:'碧南海釣り広場', prefecture:'愛知県', area:'碧南市', type:'海釣り公園', lat:34.844, lon:136.980, amp:58, base:121, phase:-.02},
-  {name:'衣浦港', prefecture:'愛知県', area:'半田市', type:'港', lat:34.876, lon:136.960, amp:60, base:123, phase:-.02},
-  {name:'亀崎港', prefecture:'愛知県', area:'半田市', type:'港', lat:34.922, lon:136.962, amp:61, base:124, phase:-.01},
-  {name:'一色漁港', prefecture:'愛知県', area:'西尾市', type:'港', lat:34.789, lon:137.014, amp:56, base:118, phase:-.10},
-  {name:'西浦港', prefecture:'愛知県', area:'蒲郡市', type:'港', lat:34.778, lon:137.176, amp:55, base:115, phase:-.18},
-  {name:'豊浜釣り桟橋', prefecture:'愛知県', area:'南知多町', type:'海釣り公園', lat:34.702, lon:136.927, amp:55, base:113, phase:-.18},
-  {name:'師崎港', prefecture:'愛知県', area:'南知多町', type:'港', lat:34.700, lon:136.974, amp:54, base:112, phase:-.20},
-  {name:'伊良湖港', prefecture:'愛知県', area:'田原市', type:'港', lat:34.584, lon:137.018, amp:52, base:105, phase:-.35},
-  {name:'赤羽根港', prefecture:'愛知県', area:'田原市', type:'港', lat:34.609, lon:137.198, amp:50, base:103, phase:-.55},
-  {name:'小松原海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.676, lon:137.394, amp:48, base:100, phase:-.72},
-  {name:'伊古部海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.668, lon:137.437, amp:48, base:100, phase:-.74},
-  {name:'表浜海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.667, lon:137.465, amp:48, base:100, phase:-.76},
-  {name:'佐久島西港', prefecture:'愛知県', area:'西尾市', type:'港', lat:34.728, lon:137.037, amp:54, base:114, phase:-.14},
-
-  // 三重県
-  {name:'鈴鹿漁港', prefecture:'三重県', area:'鈴鹿市', type:'港', lat:34.840, lon:136.606, amp:64, base:124, phase:.18},
-  {name:'白子漁港', prefecture:'三重県', area:'鈴鹿市', type:'港', lat:34.833, lon:136.600, amp:64, base:123, phase:.18},
-  {name:'千代崎漁港', prefecture:'三重県', area:'鈴鹿市', type:'港', lat:34.857, lon:136.616, amp:64, base:124, phase:.18},
-  {name:'四日市港', prefecture:'三重県', area:'四日市市', type:'港', lat:34.948, lon:136.653, amp:66, base:130, phase:.22},
-  {name:'霞ヶ浦ふ頭', prefecture:'三重県', area:'四日市市', type:'堤防', lat:34.982, lon:136.660, amp:66, base:130, phase:.22},
-  {name:'磯津漁港', prefecture:'三重県', area:'四日市市', type:'港', lat:34.905, lon:136.640, amp:65, base:128, phase:.20},
-  {name:'長良川河口', prefecture:'三重県', area:'桑名市', type:'河口', lat:35.049, lon:136.700, amp:68, base:136, phase:.25},
-  {name:'木曽川河口', prefecture:'三重県', area:'桑名市', type:'河口', lat:35.041, lon:136.722, amp:68, base:136, phase:.25},
-  {name:'津ヨットハーバー', prefecture:'三重県', area:'津市', type:'堤防', lat:34.704, lon:136.534, amp:62, base:116, phase:.05},
-  {name:'香良洲海岸', prefecture:'三重県', area:'津市', type:'サーフ', lat:34.661, lon:136.537, amp:60, base:114, phase:0},
-  {name:'日本鋼管突堤', prefecture:'三重県', area:'津市', type:'堤防', lat:34.641, lon:136.541, amp:60, base:113, phase:-.02},
-  {name:'松阪港', prefecture:'三重県', area:'松阪市', type:'港', lat:34.589, lon:136.570, amp:59, base:112, phase:-.05},
-  {name:'鳥羽港', prefecture:'三重県', area:'鳥羽市', type:'港', lat:34.486, lon:136.846, amp:52, base:106, phase:-.22},
-  {name:'答志島', prefecture:'三重県', area:'鳥羽市', type:'堤防', lat:34.520, lon:136.891, amp:51, base:105, phase:-.25},
-  {name:'古和浦', prefecture:'三重県', area:'南伊勢町', type:'港', lat:34.229, lon:136.521, amp:48, base:100, phase:-.45},
-  {name:'尾鷲港', prefecture:'三重県', area:'尾鷲市', type:'港', lat:34.072, lon:136.208, amp:46, base:96, phase:-.60},
-  {name:'熊野大泊海岸', prefecture:'三重県', area:'熊野市', type:'サーフ', lat:33.900, lon:136.124, amp:45, base:95, phase:-.70},
-
-  // 静岡県
-  {name:'浜名湖新居', prefecture:'静岡県', area:'湖西市', type:'海釣り公園', lat:34.690, lon:137.563, amp:46, base:94, phase:-.75},
-  {name:'新居海釣公園', prefecture:'静岡県', area:'湖西市', type:'海釣り公園', lat:34.689, lon:137.564, amp:46, base:94, phase:-.75},
-  {name:'今切口', prefecture:'静岡県', area:'湖西市', type:'堤防', lat:34.682, lon:137.591, amp:47, base:95, phase:-.78},
-  {name:'舞阪港', prefecture:'静岡県', area:'浜松市', type:'港', lat:34.682, lon:137.617, amp:47, base:95, phase:-.80},
-  {name:'弁天島', prefecture:'静岡県', area:'浜松市', type:'堤防', lat:34.693, lon:137.604, amp:47, base:95, phase:-.78},
-  {name:'天竜川河口', prefecture:'静岡県', area:'浜松市', type:'河口', lat:34.650, lon:137.817, amp:50, base:100, phase:-1.06},
-  {name:'福田漁港', prefecture:'静岡県', area:'磐田市', type:'港', lat:34.670, lon:137.922, amp:50, base:100, phase:-1.15},
-  {name:'太田川河口', prefecture:'静岡県', area:'磐田市', type:'河口', lat:34.666, lon:137.905, amp:50, base:100, phase:-1.15},
-  {name:'御前崎港', prefecture:'静岡県', area:'御前崎市', type:'港', lat:34.605, lon:138.218, amp:48, base:98, phase:-1.35},
-  {name:'相良海岸', prefecture:'静岡県', area:'牧之原市', type:'サーフ', lat:34.689, lon:138.219, amp:48, base:98, phase:-1.30},
-  {name:'焼津港', prefecture:'静岡県', area:'焼津市', type:'港', lat:34.866, lon:138.327, amp:46, base:96, phase:-1.45},
-  {name:'用宗港', prefecture:'静岡県', area:'静岡市', type:'港', lat:34.920, lon:138.361, amp:46, base:96, phase:-1.50},
-  {name:'清水港', prefecture:'静岡県', area:'静岡市', type:'港', lat:35.019, lon:138.502, amp:44, base:94, phase:-1.55},
-  {name:'三保海岸', prefecture:'静岡県', area:'静岡市', type:'サーフ', lat:35.000, lon:138.522, amp:44, base:94, phase:-1.55},
-  {name:'沼津港', prefecture:'静岡県', area:'沼津市', type:'港', lat:35.084, lon:138.860, amp:42, base:90, phase:-1.80},
-  {name:'静浦港', prefecture:'静岡県', area:'沼津市', type:'港', lat:35.034, lon:138.898, amp:42, base:90, phase:-1.82},
-  {name:'熱海港', prefecture:'静岡県', area:'熱海市', type:'港', lat:35.095, lon:139.076, amp:40, base:88, phase:-1.96},
-  {name:'伊東港', prefecture:'静岡県', area:'伊東市', type:'港', lat:34.973, lon:139.099, amp:40, base:88, phase:-2.0},
-
-  // 和歌山県
-  {name:'紀ノ川河口', prefecture:'和歌山県', area:'和歌山市', type:'河口', lat:34.230, lon:135.117, amp:52, base:103, phase:.35},
-  {name:'青岸', prefecture:'和歌山県', area:'和歌山市', type:'堤防', lat:34.218, lon:135.133, amp:52, base:103, phase:.34},
-  {name:'加太港', prefecture:'和歌山県', area:'和歌山市', type:'港', lat:34.277, lon:135.072, amp:50, base:101, phase:.30},
-  {name:'田ノ浦漁港', prefecture:'和歌山県', area:'和歌山市', type:'港', lat:34.185, lon:135.164, amp:52, base:102, phase:.30},
-  {name:'雑賀崎漁港', prefecture:'和歌山県', area:'和歌山市', type:'港', lat:34.188, lon:135.148, amp:52, base:102, phase:.30},
-  {name:'和歌山マリーナシティ', prefecture:'和歌山県', area:'和歌山市', type:'海釣り公園', lat:34.153, lon:135.179, amp:52, base:102, phase:.27},
-  {name:'海南港', prefecture:'和歌山県', area:'海南市', type:'港', lat:34.158, lon:135.203, amp:52, base:102, phase:.25},
-  {name:'下津港', prefecture:'和歌山県', area:'海南市', type:'港', lat:34.113, lon:135.153, amp:51, base:101, phase:.22},
-  {name:'有田川河口', prefecture:'和歌山県', area:'有田市', type:'河口', lat:34.083, lon:135.106, amp:50, base:100, phase:.20},
-  {name:'湯浅広港', prefecture:'和歌山県', area:'湯浅町', type:'港', lat:34.035, lon:135.167, amp:50, base:100, phase:.16},
-  {name:'由良海つり公園', prefecture:'和歌山県', area:'由良町', type:'海釣り公園', lat:33.977, lon:135.088, amp:49, base:99, phase:.08},
-  {name:'日高港', prefecture:'和歌山県', area:'御坊市', type:'港', lat:33.882, lon:135.152, amp:48, base:98, phase:0},
-  {name:'煙樹ヶ浜', prefecture:'和歌山県', area:'美浜町', type:'サーフ', lat:33.886, lon:135.104, amp:48, base:98, phase:0},
-  {name:'天神崎', prefecture:'和歌山県', area:'田辺市', type:'堤防', lat:33.725, lon:135.340, amp:46, base:96, phase:-.18},
-  {name:'串本港', prefecture:'和歌山県', area:'串本町', type:'港', lat:33.472, lon:135.784, amp:44, base:94, phase:-.55},
-  {name:'勝浦港', prefecture:'和歌山県', area:'那智勝浦町', type:'港', lat:33.625, lon:135.941, amp:44, base:94, phase:-.68},
-
-  // 福井県
-  {name:'敦賀新港', prefecture:'福井県', area:'敦賀市', type:'港', lat:35.672, lon:136.064, amp:22, base:38, phase:.20},
-  {name:'敦賀港', prefecture:'福井県', area:'敦賀市', type:'港', lat:35.657, lon:136.073, amp:22, base:38, phase:.20},
-  {name:'気比の松原', prefecture:'福井県', area:'敦賀市', type:'サーフ', lat:35.651, lon:136.055, amp:22, base:38, phase:.18},
-  {name:'菅浜漁港', prefecture:'福井県', area:'美浜町', type:'港', lat:35.646, lon:135.944, amp:21, base:37, phase:.12},
-  {name:'日向湖', prefecture:'福井県', area:'美浜町', type:'堤防', lat:35.616, lon:135.896, amp:21, base:37, phase:.08},
-  {name:'小浜港', prefecture:'福井県', area:'小浜市', type:'港', lat:35.492, lon:135.746, amp:21, base:37, phase:-.04},
-  {name:'阿納漁港', prefecture:'福井県', area:'小浜市', type:'港', lat:35.542, lon:135.727, amp:21, base:37, phase:-.05},
-  {name:'若狭大島', prefecture:'福井県', area:'おおい町', type:'堤防', lat:35.525, lon:135.645, amp:21, base:36, phase:-.08},
-  {name:'音海大波止', prefecture:'福井県', area:'高浜町', type:'堤防', lat:35.526, lon:135.507, amp:21, base:36, phase:-.14},
-  {name:'高浜漁港', prefecture:'福井県', area:'高浜町', type:'港', lat:35.495, lon:135.551, amp:21, base:36, phase:-.12},
-  {name:'越前海岸', prefecture:'福井県', area:'越前町', type:'堤防', lat:35.974, lon:135.977, amp:22, base:38, phase:.28},
-  {name:'梅浦漁港', prefecture:'福井県', area:'越前町', type:'港', lat:35.963, lon:135.965, amp:22, base:38, phase:.26},
-  {name:'鷹巣漁港', prefecture:'福井県', area:'福井市', type:'港', lat:36.102, lon:136.060, amp:23, base:39, phase:.35},
-  {name:'三国港', prefecture:'福井県', area:'坂井市', type:'港', lat:36.217, lon:136.145, amp:23, base:40, phase:.42},
-  {name:'九頭竜川河口', prefecture:'福井県', area:'坂井市', type:'河口', lat:36.224, lon:136.147, amp:23, base:40, phase:.42},
-
-  // 石川県
-  {name:'金沢港', prefecture:'石川県', area:'金沢市', type:'港', lat:36.616, lon:136.603, amp:24, base:42, phase:.52},
-  {name:'大野川河口', prefecture:'石川県', area:'金沢市', type:'河口', lat:36.608, lon:136.601, amp:24, base:42, phase:.52},
-  {name:'犀川河口', prefecture:'石川県', area:'金沢市', type:'河口', lat:36.586, lon:136.585, amp:24, base:42, phase:.50},
-  {name:'内灘放水路', prefecture:'石川県', area:'内灘町', type:'河口', lat:36.653, lon:136.625, amp:24, base:42, phase:.55},
-  {name:'手取川河口', prefecture:'石川県', area:'白山市', type:'河口', lat:36.516, lon:136.522, amp:24, base:41, phase:.48},
-  {name:'安宅海岸', prefecture:'石川県', area:'小松市', type:'サーフ', lat:36.406, lon:136.408, amp:23, base:41, phase:.42},
-  {name:'橋立漁港', prefecture:'石川県', area:'加賀市', type:'港', lat:36.330, lon:136.315, amp:23, base:40, phase:.36},
-  {name:'千里浜', prefecture:'石川県', area:'羽咋市', type:'サーフ', lat:36.913, lon:136.779, amp:24, base:42, phase:.65},
-  {name:'七尾港', prefecture:'石川県', area:'七尾市', type:'港', lat:37.047, lon:136.963, amp:19, base:35, phase:.72},
-  {name:'能登島', prefecture:'石川県', area:'七尾市', type:'堤防', lat:37.126, lon:136.999, amp:19, base:35, phase:.75},
-  {name:'穴水湾', prefecture:'石川県', area:'穴水町', type:'港', lat:37.229, lon:136.906, amp:19, base:35, phase:.77},
-  {name:'富来漁港', prefecture:'石川県', area:'志賀町', type:'港', lat:37.141, lon:136.716, amp:22, base:39, phase:.75},
-  {name:'輪島港', prefecture:'石川県', area:'輪島市', type:'港', lat:37.401, lon:136.900, amp:22, base:39, phase:.88},
-  {name:'宇出津港', prefecture:'石川県', area:'能登町', type:'港', lat:37.306, lon:137.148, amp:20, base:36, phase:.92},
-  {name:'珠洲飯田港', prefecture:'石川県', area:'珠洲市', type:'港', lat:37.436, lon:137.262, amp:20, base:36, phase:1.0},
-
-  // 愛知県 サーフ追加
-  {name:'寺沢海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.670, lon:137.410, amp:48, base:100, phase:-.73},
-  {name:'細谷海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.660, lon:137.490, amp:48, base:100, phase:-.77},
-  {name:'七根海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.666, lon:137.447, amp:48, base:100, phase:-.75},
-  {name:'高塚海岸', prefecture:'愛知県', area:'豊橋市', type:'サーフ', lat:34.661, lon:137.523, amp:48, base:100, phase:-.79},
-  {name:'田原サーフ', prefecture:'愛知県', area:'田原市', type:'サーフ', lat:34.619, lon:137.181, amp:50, base:103, phase:-.55},
-  {name:'赤羽根ロングビーチ', prefecture:'愛知県', area:'田原市', type:'サーフ', lat:34.603, lon:137.192, amp:50, base:103, phase:-.55},
-  {name:'若見海岸', prefecture:'愛知県', area:'田原市', type:'サーフ', lat:34.598, lon:137.252, amp:49, base:102, phase:-.60},
-  {name:'堀切海岸', prefecture:'愛知県', area:'田原市', type:'サーフ', lat:34.594, lon:137.081, amp:51, base:104, phase:-.42},
-  {name:'日出の石門', prefecture:'愛知県', area:'田原市', type:'サーフ', lat:34.593, lon:137.100, amp:51, base:104, phase:-.43},
-  {name:'伊良湖西の浜', prefecture:'愛知県', area:'田原市', type:'サーフ', lat:34.608, lon:137.003, amp:52, base:105, phase:-.35},
-
-  // 三重県 サーフ追加・伊勢方面強化
-  {name:'御殿場海岸', prefecture:'三重県', area:'津市', type:'サーフ', lat:34.705, lon:136.529, amp:62, base:116, phase:.04},
-  {name:'阿漕浦海岸', prefecture:'三重県', area:'津市', type:'サーフ', lat:34.697, lon:136.531, amp:62, base:116, phase:.04},
-  {name:'町屋浦海岸', prefecture:'三重県', area:'津市', type:'サーフ', lat:34.738, lon:136.528, amp:63, base:118, phase:.06},
-  {name:'松名瀬海岸', prefecture:'三重県', area:'松阪市', type:'サーフ', lat:34.587, lon:136.590, amp:59, base:112, phase:-.05},
-  {name:'大淀海岸', prefecture:'三重県', area:'明和町', type:'サーフ', lat:34.553, lon:136.627, amp:58, base:111, phase:-.09},
-  {name:'明和サーフ', prefecture:'三重県', area:'明和町', type:'サーフ', lat:34.549, lon:136.650, amp:58, base:111, phase:-.10},
-  {name:'有滝海岸', prefecture:'三重県', area:'伊勢市', type:'サーフ', lat:34.523, lon:136.684, amp:56, base:109, phase:-.14},
-  {name:'村松海岸', prefecture:'三重県', area:'伊勢市', type:'サーフ', lat:34.514, lon:136.704, amp:56, base:109, phase:-.16},
-  {name:'二見浦', prefecture:'三重県', area:'伊勢市', type:'サーフ', lat:34.508, lon:136.785, amp:54, base:107, phase:-.20},
-  {name:'宮川河口', prefecture:'三重県', area:'伊勢市', type:'河口', lat:34.512, lon:136.710, amp:56, base:109, phase:-.16},
-  {name:'五十鈴川河口', prefecture:'三重県', area:'伊勢市', type:'河口', lat:34.501, lon:136.770, amp:54, base:107, phase:-.20},
-  {name:'国府の浜', prefecture:'三重県', area:'志摩市', type:'サーフ', lat:34.356, lon:136.884, amp:50, base:104, phase:-.30},
-  {name:'市後浜', prefecture:'三重県', area:'志摩市', type:'サーフ', lat:34.350, lon:136.864, amp:50, base:104, phase:-.31},
-  {name:'甲賀浜', prefecture:'三重県', area:'志摩市', type:'サーフ', lat:34.338, lon:136.849, amp:50, base:104, phase:-.32},
-  {name:'南張海浜公園', prefecture:'三重県', area:'南伊勢町', type:'サーフ', lat:34.270, lon:136.657, amp:48, base:100, phase:-.42},
-
-  // 静岡県 サーフ追加
-  {name:'新居サーフ', prefecture:'静岡県', area:'湖西市', type:'サーフ', lat:34.669, lon:137.573, amp:47, base:95, phase:-.78},
-  {name:'篠原海岸', prefecture:'静岡県', area:'浜松市', type:'サーフ', lat:34.674, lon:137.657, amp:48, base:96, phase:-.88},
-  {name:'中田島砂丘', prefecture:'静岡県', area:'浜松市', type:'サーフ', lat:34.653, lon:137.743, amp:49, base:98, phase:-.98},
-  {name:'天竜川河口西', prefecture:'静岡県', area:'浜松市', type:'サーフ', lat:34.646, lon:137.805, amp:50, base:100, phase:-1.05},
-  {name:'駒場海岸', prefecture:'静岡県', area:'磐田市', type:'サーフ', lat:34.656, lon:137.862, amp:50, base:100, phase:-1.10},
-  {name:'竜洋海洋公園前', prefecture:'静岡県', area:'磐田市', type:'サーフ', lat:34.653, lon:137.879, amp:50, base:100, phase:-1.12},
-  {name:'福田海岸', prefecture:'静岡県', area:'磐田市', type:'サーフ', lat:34.661, lon:137.930, amp:50, base:100, phase:-1.16},
-  {name:'浅羽海岸', prefecture:'静岡県', area:'袋井市', type:'サーフ', lat:34.665, lon:137.955, amp:50, base:100, phase:-1.18},
-  {name:'浜岡砂丘', prefecture:'静岡県', area:'御前崎市', type:'サーフ', lat:34.616, lon:138.150, amp:49, base:99, phase:-1.31},
-  {name:'静波海岸', prefecture:'静岡県', area:'牧之原市', type:'サーフ', lat:34.735, lon:138.223, amp:48, base:98, phase:-1.30},
-  {name:'片浜海岸', prefecture:'静岡県', area:'牧之原市', type:'サーフ', lat:34.719, lon:138.222, amp:48, base:98, phase:-1.31},
-  {name:'蒲原海岸', prefecture:'静岡県', area:'静岡市', type:'サーフ', lat:35.105, lon:138.604, amp:44, base:94, phase:-1.62},
-  {name:'富士川河口', prefecture:'静岡県', area:'富士市', type:'河口', lat:35.127, lon:138.660, amp:43, base:92, phase:-1.68},
-  {name:'千本浜', prefecture:'静岡県', area:'沼津市', type:'サーフ', lat:35.099, lon:138.836, amp:42, base:90, phase:-1.78},
-  {name:'原海岸', prefecture:'静岡県', area:'沼津市', type:'サーフ', lat:35.119, lon:138.796, amp:42, base:90, phase:-1.76},
-
+const $=id=>document.getElementById(id);
+const CANDIDATES=[
+{name:'名古屋港',prefecture:'愛知県',area:'名古屋市',type:'港',lat:35.073,lon:136.881,station:'NG'},
+{name:'鈴鹿漁港',prefecture:'三重県',area:'鈴鹿市',type:'港',lat:34.840,lon:136.606,station:'G3'},
+{name:'四日市港',prefecture:'三重県',area:'四日市市',type:'港',lat:34.948,lon:136.653,station:'G3'},
+{name:'長良川河口',prefecture:'三重県',area:'桑名市',type:'河口',lat:35.049,lon:136.700,station:'G3'},
+{name:'新舞子',prefecture:'愛知県',area:'知多市',type:'堤防',lat:34.949,lon:136.825,station:'ZD'},
+{name:'赤羽根港',prefecture:'愛知県',area:'田原市',type:'港',lat:34.609,lon:137.198,station:'I4'},
+{name:'伊古部海岸',prefecture:'愛知県',area:'豊橋市',type:'サーフ',lat:34.668,lon:137.437,station:'I4'},
+{name:'浜名湖新居',prefecture:'静岡県',area:'湖西市',type:'海釣り公園',lat:34.690,lon:137.563,station:'I4'},
+{name:'天竜川河口',prefecture:'静岡県',area:'浜松市',type:'河口',lat:34.650,lon:137.817,station:'I4'}
 ];
+const INITIAL=CANDIDATES.map(p=>({...p}));
+let points=loadPoints();
+let selected=localStorage.getItem('ftbi.selected')||'四日市港';
+let offset=0,weather=null,marine=null,chosen=null,mapPref='すべて',mapType='すべて',bestWindows=[];
+let audioCtx=null,alarmEnabled=localStorage.getItem('ftbi.alarmEnabled')==='on';
+let quakeEnabled=localStorage.getItem('ftbi.quakeAlert')!=='off';
+function loadPoints(){try{const p=JSON.parse(localStorage.getItem('ftbi.points')||'null');if(Array.isArray(p)&&p.length)return p}catch(e){}return INITIAL}
+function savePoints(){localStorage.setItem('ftbi.points',JSON.stringify(points))}
+function point(){return points.find(p=>p.name===selected)||points[0]||INITIAL[0]}
+function date(){const d=new Date();d.setDate(d.getDate()+offset);d.setHours(0,0,0,0);return d}
+function ymd(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fmtDate(d){return `${d.getMonth()+1}月${d.getDate()}日(${'日月火水木金土'[d.getDay()]})`}
+function moonAge(d){const syn=29.530588853,ref=Date.UTC(2000,0,6,18,14);const days=(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),12)-ref)/86400000;return ((days%syn)+syn)%syn}
+function tideType(age){if(age<1.5||age>28||(age>13.2&&age<16.2))return'大潮';if((age>=9.5&&age<10.8)||(age>=24.2&&age<25.5))return'長潮';if((age>=10.8&&age<12.2)||(age>=25.5&&age<27))return'若潮';if((age>=6.7&&age<9.5)||(age>=21.4&&age<24.2))return'小潮';return'中潮'}
+function dayData(){return window.JMA_TIDE_DATA?.[point().station]?.days?.[ymd(date())]||null}
 
-const INITIAL_NAMES = ['名古屋港','鈴鹿漁港','四日市港','長良川河口','新舞子','赤羽根港','伊古部海岸','浜名湖新居','天竜川河口'];
-const DEFAULT_POINTS = INITIAL_NAMES.map(n => ({...SPOTS.find(s => s.name === n)}));
-const $ = id => document.getElementById(id);
-
-const state = {
-  points: loadPoints(),
-  selectedName: localStorage.getItem('ftbi.selected') || '名古屋港',
-  favorites: new Set(JSON.parse(localStorage.getItem('ftbi.favorites') || '["名古屋港"]')),
-  dateOffset: 0,
-  weather: null,
-  marine: null,
-  mapPref: '愛知県',
-  mapType: 'サーフ',
-  chosenSpot: null,
-  userLocation: null,
-  quakeAlertEnabled: localStorage.getItem('ftbi.quakeAlert') !== 'off',
-  alarmEnabled: localStorage.getItem('ftbi.alarmEnabled') === 'on',
-  alarmUnlocked: false,
-  lastQuakeId: localStorage.getItem('ftbi.lastQuakeId') || '',
-  lastTsunamiId: localStorage.getItem('ftbi.lastTsunamiId') || '',
-  earthquakeTimer: null,
-  alarmTimer: null,
-  audioCtx: null
-};
-
-function loadPoints(){
-  try {
-    const raw = JSON.parse(localStorage.getItem('ftbi.points'));
-    if(Array.isArray(raw) && raw.length) return raw;
-  } catch(e) {}
-  return DEFAULT_POINTS;
+function pad2(n){return String(n).padStart(2,'0')}
+function hmDate(d){return d instanceof Date&&!Number.isNaN(d.getTime())?`${pad2(d.getHours())}:${pad2(d.getMinutes())}`:'--:--'}
+const RAD=Math.PI/180,DAYMS=86400000,J1970=2440588,J2000=2451545;
+function toJulian(d){return d.valueOf()/DAYMS-0.5+J1970}
+function fromJulian(j){return new Date((j+0.5-J1970)*DAYMS)}
+function toDays(d){return toJulian(d)-J2000}
+function rightAscension(l,b){const e=RAD*23.4397;return Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l))}
+function declination(l,b){const e=RAD*23.4397;return Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l))}
+function azimuth(H,phi,dec){return Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(phi)-Math.tan(dec)*Math.cos(phi))}
+function altitude(H,phi,dec){return Math.asin(Math.sin(phi)*Math.sin(dec)+Math.cos(phi)*Math.cos(dec)*Math.cos(H))}
+function siderealTime(d,lw){return RAD*(280.16+360.9856235*d)-lw}
+function astroRefraction(h){if(h<0)h=0;return 0.0002967/Math.tan(h+0.00312536/(h+0.08901179))}
+function moonCoords(d){const L=RAD*(218.316+13.176396*d),M=RAD*(134.963+13.064993*d),F=RAD*(93.272+13.229350*d);const l=L+RAD*6.289*Math.sin(M),b=RAD*5.128*Math.sin(F);return {ra:rightAscension(l,b),dec:declination(l,b)}}
+function moonPosition(date,lat,lon){const lw=RAD*-lon,phi=RAD*lat,d=toDays(date),c=moonCoords(d),H=siderealTime(d,lw)-c.ra;let h=altitude(H,phi,c.dec);h+=astroRefraction(h);return {altitude:h,azimuth:azimuth(H,phi,c.dec)}}
+function moonTimes(date,lat,lon){const t=new Date(date);t.setHours(0,0,0,0);const hc=RAD*0.133;let h0=moonPosition(t,lat,lon).altitude-hc,rise=null,set=null;for(let i=1;i<=24;i+=2){const h1=moonPosition(new Date(t.getTime()+i*3600000),lat,lon).altitude-hc,h2=moonPosition(new Date(t.getTime()+(i+1)*3600000),lat,lon).altitude-hc;const a=(h0+h2)/2-h1,b=(h2-h0)/2,xe=-b/(2*a),ye=(a*xe+b)*xe+h1,d=b*b-4*a*h1;let roots=0,x1=0,x2=0;if(d>=0){const dx=Math.sqrt(d)/(Math.abs(a)*2);x1=xe-dx;x2=xe+dx;if(Math.abs(x1)<=1)roots++;if(Math.abs(x2)<=1)roots++;if(x1<-1)x1=x2}if(roots===1){if(h0<0)rise=i+x1;else set=i+x1}else if(roots===2){rise=i+(ye<0?x2:x1);set=i+(ye<0?x1:x2)}if(rise!=null&&set!=null)break;h0=h2}const mk=x=>x==null?null:new Date(t.getTime()+x*3600000);return {rise:mk(rise),set:mk(set)}}
+function hourFromIso(v){if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d.getHours()+d.getMinutes()/60}
+function interp(a,h){if(!a)return null;const i=Math.max(0,Math.min(23,Math.floor(h))),j=Math.min(23,i+1),t=h-i;return a[i]*(1-t)+a[j]*t}
+function svgEl(n,a={}){const e=document.createElementNS('http://www.w3.org/2000/svg',n);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));return e}
+function daylightBaseScore(h,sunrise,sunset){
+  const near=(center,before,after,max)=>{const d=h-center;if(d>=-before&&d<=after)return max*(1-Math.abs(d)/(d<0?before:after));return 0};
+  const dawn=near(sunrise,1.5,1.0,50), dusk=near(sunset,1.5,1.0,42);
+  const night=(h<sunrise-1.5||h>sunset+1.0)?18:0;
+  const day=(h>=sunrise+1&&h<=sunset-1.5)?8:0;
+  return Math.max(dawn,dusk,night,day);
 }
-function savePoints(){ localStorage.setItem('ftbi.points', JSON.stringify(state.points)); }
-function saveFavs(){ localStorage.setItem('ftbi.favorites', JSON.stringify([...state.favorites])); }
-function selectedPoint(){ return state.points.find(p=>p.name===state.selectedName) || state.points[0] || DEFAULT_POINTS[0]; }
-function selectedDate(){ const d = new Date(); d.setDate(d.getDate()+state.dateOffset); d.setHours(0,0,0,0); return d; }
-function ymd(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function fmtDate(d){ const w='日月火水木金土'[d.getDay()]; return `${d.getMonth()+1}月${d.getDate()}日(${w})`; }
-function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
-function hm(hour){ let h=Math.floor(hour)%24; let m=Math.round((hour-Math.floor(hour))*60); if(m===60){h=(h+1)%24;m=0;} return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
-function currentHour(){ if(state.dateOffset!==0) return 12; const d=new Date(); return d.getHours()+d.getMinutes()/60; }
-function degDistanceKm(aLat,aLon,bLat,bLon){ const R=6371; const toRad=x=>x*Math.PI/180; const dLat=toRad(bLat-aLat); const dLon=toRad(bLon-aLon); const aa=Math.sin(dLat/2)**2+Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(aa),Math.sqrt(1-aa)); }
-
-function moonAge(date){
-  const synodic=29.530588853;
-  const ref=Date.UTC(2000,0,6,18,14,0);
-  const days=(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),12)-ref)/86400000;
-  return ((days%synodic)+synodic)%synodic;
+function weatherBonus(code,rain){
+  if([95,96,99].includes(code))return -100;
+  if([2,3,45,48].includes(code))return 10;
+  if([51,53,55,61].includes(code))return 6;
+  if(code===0||code===1)return 3;
+  return rain>5?-10:0;
 }
-function tideClass(age){
-  if(age<1.5||age>28||(age>13.2&&age<16.2)) return '大潮';
-  if((age>=9.5&&age<10.8)||(age>=24.2&&age<25.5)) return '長潮';
-  if((age>=10.8&&age<12.2)||(age>=25.5&&age<27)) return '若潮';
-  if((age>=6.7&&age<9.5)||(age>=21.4&&age<24.2)) return '小潮';
-  return '中潮';
-}
-function tideFactor(age){ const spring=(Math.cos(2*Math.PI*age/14.765)+1)/2; return 0.62+spring*0.55; }
-function tideHeight(p,hour,age){ const amp=(p.amp||50)*tideFactor(age); const h=hour+(p.phase||0)+age*.78; return (p.base||100)+amp*(Math.sin(2*Math.PI*h/12.42)+.22*Math.sin(2*Math.PI*(h-2.4)/24)); }
-function tideSeries(p,date){
-  const age=moonAge(date); const data=[];
-  for(let h=0;h<=24.001;h+=.25) data.push({hour:h,height:tideHeight(p,h,age)});
-  const extrema=[];
-  for(let i=1;i<data.length-1;i++){
-    const prev=data[i-1].height, cur=data[i].height, next=data[i+1].height;
-    if(cur>=prev&&cur>=next) extrema.push({...data[i],type:'high'});
-    if(cur<=prev&&cur<=next) extrema.push({...data[i],type:'low'});
+function calcBestWindows(d){
+  if(!d||!weather||!marine)return [];
+  const sunrise=hourFromIso(weather?.daily?.sunrise?.[0])??5.5;
+  const sunset=hourFromIso(weather?.daily?.sunset?.[0])??18.5;
+  const scores=[];
+  for(let h=0;h<24;h+=0.5){
+    const wind=val(weather,'wind_speed_10m',h),wave=val(marine,'wave_height',h),code=val(weather,'weather_code',h),rain=val(weather,'precipitation',h)??0;
+    if(wind==null||wave==null)continue;
+    const move=Math.abs(interp(d.hourly,Math.min(23,h+1))-interp(d.hourly,h));
+    const tide=Math.min(25,move*1.35);
+    const base=daylightBaseScore(h,sunrise,sunset);
+    const wx=weatherBonus(code,rain);
+    let s=base+tide+wx;
+    let safety='ok';
+    if(wind>15||wave>1.5||[95,96,99].includes(code))safety='danger';
+    else if(wind>10||wave>1.0||wind>=8||wave>=0.8)safety='caution';
+    if(safety==='danger')s-=60; else if(safety==='caution')s-=12;
+    scores.push({h,s,safety});
   }
-  return {age,data,extrema};
+  scores.sort((a,b)=>b.s-a.s);
+  const chosen=[];
+  for(const c of scores){if(chosen.every(x=>Math.abs(x.h-c.h)>=4)){chosen.push(c);if(chosen.length===2)break}}
+  return chosen.sort((a,b)=>a.h-b.h).map(c=>({start:Math.max(0,c.h-1),end:Math.min(24,c.h+1.5),score:Math.max(0,Math.round(c.s)),safety:c.safety}));
 }
-function sunTimes(date, lon){
-  const start=new Date(date.getFullYear(),0,0); const n=Math.floor((date-start)/86400000);
-  const seasonal=-.75*Math.cos((n-172)/365*2*Math.PI);
-  const sunrise=5.02+seasonal-(lon-136.8)*.03;
-  const sunset=18.15-seasonal-(lon-136.8)*.03;
-  return {sunrise:clamp(sunrise,4.4,7.1),sunset:clamp(sunset,16.8,19.3)};
+function updateWeatherWarning(){
+  const el=$('weatherWarning'); if(!el)return; el.hidden=true; el.className='weatherWarning';
+  if(!weather||!marine)return;
+  const now=offset===0?new Date().getHours():0, end=Math.min(23,now+12);
+  const winds=[],waves=[],pressures=[],codes=[];
+  for(let h=now;h<=end;h++){winds.push(val(weather,'wind_speed_10m',h));waves.push(val(marine,'wave_height',h));pressures.push(val(weather,'surface_pressure',h));codes.push(val(weather,'weather_code',h))}
+  const nums=a=>a.filter(Number.isFinite); const w=nums(winds),wv=nums(waves),pr=nums(pressures);
+  const maxWind=w.length?Math.max(...w):null,maxWave=wv.length?Math.max(...wv):null;
+  const drop=pr.length>=2?pr[0]-pr[pr.length-1]:0, minP=pr.length?Math.min(...pr):null;
+  let level='',text='';
+  if(codes.some(c=>[95,96,99].includes(c))){level='danger';text='⚠ 雷の可能性　釣行を中止し、建物・車内へ避難'}
+  else if((maxWind!=null&&maxWind>15)||(maxWave!=null&&maxWave>1.5)){level='danger';text=`⚠ 強風・高波予報　最大風速${maxWind?.toFixed(1)??'--'}m/s／波${maxWave?.toFixed(1)??'--'}m　釣行非推奨`}
+  else if(minP!=null&&minP<=995&&((maxWind??0)>=10||(maxWave??0)>=1.2)){level='danger';text='⚠ 台風・発達した低気圧の影響に注意　公式情報を確認'}
+  else if(drop>=4){level='caution';text=`⚠ 低気圧接近の可能性　12時間で気圧約${drop.toFixed(1)}hPa低下`}
+  else if((maxWind??0)>10||(maxWave??0)>1.0){level='caution';text=`⚠ 天候悪化注意　今後最大風速${maxWind?.toFixed(1)??'--'}m/s／波${maxWave?.toFixed(1)??'--'}m`}
+  if(text){el.textContent=text;el.classList.add(level);el.hidden=false}
 }
-function moonTimes(age){ const rise=(6+age*.82)%24; return {rise,set:(rise+12.2)%24}; }
-function weatherIcon(code,hour){
-  if(code===0) return hour>=18||hour<5?'🌙':'☀️';
-  if([1,2].includes(code)) return hour>=18||hour<5?'🌙':'🌤️';
-  if(code===3) return '☁️';
-  if([45,48].includes(code)) return '🌫️';
-  if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return '🌧️';
-  if([71,73,75,77,85,86].includes(code)) return '❄️';
-  if([95,96,99].includes(code)) return '⛈️';
-  return '☁️';
+function fmtWindow(w){const f=h=>`${String(Math.floor(h)).padStart(2,'0')}:${String(Math.round((h%1)*60)).padStart(2,'0')}`;return w?`${f(w.start)}〜${f(w.end)}`:'--:--〜--:--'}
+function drawTide(d,windows=[]){
+  const svg=$('tideSvg');svg.innerHTML='';
+  if(!d){const t=svgEl('text',{x:195,y:128,'text-anchor':'middle',fill:'#fff'});t.textContent='気象庁潮位データなし';svg.append(t);return}
+  const W=390,H=255,L=42,R=16,T=16,B=28,min=Math.floor((Math.min(...d.hourly)-20)/50)*50,max=Math.ceil((Math.max(...d.hourly)+20)/50)*50;
+  const x=h=>L+h/24*(W-L-R),y=v=>T+(max-v)/(max-min)*(H-T-B);
+  for(let cm=min;cm<=max;cm+=50){svg.append(svgEl('line',{x1:L,y1:y(cm),x2:W-R,y2:y(cm),stroke:'rgba(255,255,255,.18)','stroke-dasharray':'3 4'}));const tx=svgEl('text',{x:5,y:y(cm)+4,class:'axisText'});tx.textContent=`${cm}cm`;svg.append(tx)}
+  for(let h=0;h<=24;h+=3){svg.append(svgEl('line',{x1:x(h),y1:T,x2:x(h),y2:H-B,stroke:'rgba(255,255,255,.15)'}));const tx=svgEl('text',{x:x(h)-5,y:H-8,class:'axisText'});tx.textContent=h===24?'24時':h;svg.append(tx)}
+  for(const w of windows){const x1=x(w.start),x2=x(w.end);svg.append(svgEl('rect',{x:x1,y:T,width:Math.max(2,x2-x1),height:H-T-B,class:'optimalBand'}));svg.append(svgEl('line',{x1:x1,y1:T,x2:x1,y2:H-B,class:'optimalLine'}));const tx=svgEl('text',{x:x1+3,y:T+12,class:'optimalLabel'});tx.textContent='おすすめ';svg.append(tx)}
+  const markers=[
+    {h:hourFromIso(weather?.daily?.sunrise?.[0]),c:'#ffd84a',label:'☀'},
+    {h:hourFromIso(weather?.daily?.sunset?.[0]),c:'#ff8b2a',label:'🌇'}
+  ];
+  const mt=moonTimes(date(),point().lat,point().lon);
+  if(mt.rise)markers.push({h:mt.rise.getHours()+mt.rise.getMinutes()/60,c:'#dff2ff',label:'☾'});
+  if(mt.set)markers.push({h:mt.set.getHours()+mt.set.getMinutes()/60,c:'#a9cfff',label:'☽'});
+  for(const m of markers){if(m.h==null)continue;const xx=x(m.h);svg.append(svgEl('rect',{x:xx-10,y:T,width:20,height:H-T-B,fill:m.c,opacity:.12}));svg.append(svgEl('line',{x1:xx,y1:T,x2:xx,y2:H-B,stroke:m.c,'stroke-dasharray':'3 4','stroke-width':1.2}));const tx=svgEl('text',{x:xx-7,y:T+13,class:'axisText'});tx.textContent=m.label;svg.append(tx)}
+  const pts=[];for(let h=0;h<=23;h+=.25)pts.push([x(h),y(interp(d.hourly,h))]);pts.push([x(24),y(d.hourly[23])]);const path=pts.map((p,i)=>`${i?'L':'M'}${p[0]} ${p[1]}`).join(' ');
+  svg.append(svgEl('path',{d:path+` L${x(24)} ${H-B} L${x(0)} ${H-B}Z`,fill:'rgba(20,205,236,.25)'}));
+  for(let i=0;i<8;i++){const fx=L+12+i*38,fy=H-B-18-(i%3)*10;svg.append(svgEl('path',{class:'fish',d:`M${fx} ${fy} q14 -8 28 0 q-14 8 -28 0 M${fx+26} ${fy} l8 -6 v12 z`}))}
+  svg.append(svgEl('path',{d:path,fill:'none',stroke:'#35e6ff','stroke-width':4,'stroke-linecap':'round'}));
+  for(const e of d.extrema){const [hh,mm]=e.time.split(':').map(Number),xx=x(hh+mm/60),yy=y(e.height);svg.append(svgEl('circle',{cx:xx,cy:yy,r:6,fill:e.type==='high'?'#126ce0':'#eaf6ff',stroke:'#fff','stroke-width':2}));const bx=Math.max(L,Math.min(W-R-58,xx-29)),by=e.type==='high'?Math.max(T,yy-43):Math.min(H-B-35,yy+9),g=svgEl('g');g.append(svgEl('rect',{x:bx,y:by,width:58,height:35,rx:6,fill:e.type==='high'?'#126ce0':'#eaf6ff',stroke:'#70c8ff'}));let t=svgEl('text',{x:bx+29,y:by+14,class:e.type==='high'?'calloutTime':'calloutCm','text-anchor':'middle'});t.textContent=e.time;g.append(t);t=svgEl('text',{x:bx+29,y:by+29,class:e.type==='high'?'calloutTime':'calloutCm','text-anchor':'middle'});t.textContent=`${e.height}cm`;g.append(t);svg.append(g)}
+  if(offset===0){const n=new Date(),h=n.getHours()+n.getMinutes()/60,v=interp(d.hourly,h);svg.append(svgEl('circle',{cx:x(h),cy:y(v),r:8,fill:'#ff2e31',stroke:'#fff','stroke-width':3}))}
 }
-function weatherText(code){
-  if(code===0) return '晴れ'; if([1,2].includes(code)) return '晴れ時々くもり'; if(code===3) return 'くもり';
-  if([45,48].includes(code)) return '霧'; if([51,53,55].includes(code)) return '小雨';
-  if([61,63,65,80,81,82].includes(code)) return '雨'; if([95,96,99].includes(code)) return '雷雨';
-  return 'くもり';
+function compass(deg){if(deg==null||!Number.isFinite(Number(deg)))return'--';return['北','北東','東','南東','南','南西','西','北西'][Math.round(Number(deg)/45)%8]}
+function windArrow(deg){if(deg==null||!Number.isFinite(Number(deg)))return'--';return['↓','↙','←','↖','↑','↗','→','↘'][Math.round(Number(deg)/45)%8]}
+function weatherIcon(c){if(c===0)return'☀️';if([1,2].includes(c))return'🌤️';if(c===3)return'☁️';if([45,48].includes(c))return'🌫️';if([51,53,55,61,63,65,80,81,82].includes(c))return'🌧️';if([95,96,99].includes(c))return'⛈️';return'☁️'}
+function weatherText(c){if(c===0)return'晴れ';if([1,2].includes(c))return'晴れ時々くもり';if(c===3)return'くもり';if([51,53,55,61,63,65,80,81,82].includes(c))return'雨';if([95,96,99].includes(c))return'雷雨';return'不明'}
+function val(o,k,h){return o?.hourly?.[k]?.[Math.max(0,Math.min(23,Math.round(h)))]??null}
+async function fetchWeather(){const p=point(),ds=ymd(date());weather=marine=null;try{const wp=new URLSearchParams({latitude:p.lat,longitude:p.lon,timezone:'Asia/Tokyo',start_date:ds,end_date:ds,hourly:'temperature_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure',daily:'sunrise,sunset'});const mp=new URLSearchParams({latitude:p.lat,longitude:p.lon,timezone:'Asia/Tokyo',start_date:ds,end_date:ds,hourly:'wave_height,sea_surface_temperature'});const [wr,mr]=await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?${wp}`,{cache:'no-store'}),fetch(`https://marine-api.open-meteo.com/v1/marine?${mp}`,{cache:'no-store'})]);if(!wr.ok||!mr.ok)throw Error('API');weather=await wr.json();marine=await mr.json()}catch(e){}renderWeather()}
+function safety(el,v,kind){el.classList.remove('safeBlue','safeYellow','safeRed');if(v==null)return;if(kind==='wind')el.classList.add(v<=10?'safeBlue':v<=15?'safeYellow':'safeRed');else el.classList.add(v<=1?'safeBlue':v<=1.5?'safeYellow':'safeRed')}
+function renderWeather(){
+  const h=offset===0?new Date().getHours():12,c=val(weather,'weather_code',h),temp=val(weather,'temperature_2m',h),wind=val(weather,'wind_speed_10m',h),dir=val(weather,'wind_direction_10m',h),wave=val(marine,'wave_height',h),water=val(marine,'sea_surface_temperature',h);
+  $('weatherIcon').textContent=c==null?'--':weatherIcon(c);$('weatherText').textContent=c==null?'取得不能':weatherText(c);$('temperature').textContent=temp==null?'--℃':`${Number(temp).toFixed(1)}℃`;
+  $('windDir').innerHTML=dir==null?'--':`<span class="windArrow">${windArrow(dir)}</span>${compass(dir)}`;
+  $('windSpeed').textContent=wind==null?'--':`${Number(wind).toFixed(1)}m/s`;$('waveHeight').textContent=wave==null?'--':`${Number(wave).toFixed(1)}m`;$('waterTemp').textContent=water==null?'--':`${Number(water).toFixed(1)}℃`;
+  safety($('windSpeed'),wind,'wind');safety($('waveHeight'),wave,'wave');
+  const grid=$('hourlyGrid');grid.innerHTML='';const hours=[0,3,6,9,12,15,18,21,23];
+  const rows=[['時間',h=>h],['天気',h=>{const v=val(weather,'weather_code',h);return v==null?'--':weatherIcon(v)}],['風向',h=>{const v=val(weather,'wind_direction_10m',h);return v==null?'--':`${windArrow(v)} ${compass(v)}`}],['風速',h=>{const v=val(weather,'wind_speed_10m',h);return v==null?'--':Number(v).toFixed(1)}],['波高',h=>{const v=val(marine,'wave_height',h);return v==null?'--':Number(v).toFixed(1)+'m'}],['水温',h=>{const v=val(marine,'sea_surface_temperature',h);return v==null?'--':Number(v).toFixed(1)}]];
+  for(const [label,fn] of rows){const hd=document.createElement('div');hd.className='rowHead';hd.textContent=label;grid.append(hd);for(const hr of hours){const cell=document.createElement('div');cell.textContent=fn(hr);if(label==='天気')cell.className='weatherCell';if(label==='風速'){cell.classList.add('numCell');safety(cell,val(weather,'wind_speed_10m',hr),'wind')}if(label==='波高'){cell.classList.add('waveCell');safety(cell,val(marine,'wave_height',hr),'wave')}grid.append(cell)}}
+  const d=dayData();bestWindows=calcBestWindows(d);$('bestTime1').textContent=fmtWindow(bestWindows[0]);$('bestTime2').textContent=fmtWindow(bestWindows[1]);$('scoreBadge').textContent=bestWindows.length?Math.max(...bestWindows.map(w=>w.score)):'--';updateWeatherWarning();drawTide(d,bestWindows);
 }
-function compass(deg){
-  if(deg==null || Number.isNaN(deg)) return '--';
-  const dirs=['北','北北東','北東','東北東','東','東南東','南東','南南東','南','南南西','南西','西南西','西','西北西','北西','北北西'];
-  return dirs[Math.round(deg/22.5)%16];
+function render(){const p=point(),d=dayData(),dt=date(),age=moonAge(dt);$('dateButton').textContent=fmtDate(dt);$('prefName').textContent=p.prefecture;$('pointName').textContent=p.name;$('tideType').textContent=tideType(age);$('moonAge').textContent=age.toFixed(1);const mt=moonTimes(dt,p.lat,p.lon);$('sunrise').textContent=weather?.daily?.sunrise?.[0]?hmDate(new Date(weather.daily.sunrise[0])):'--:--';$('sunset').textContent=weather?.daily?.sunset?.[0]?hmDate(new Date(weather.daily.sunset[0])):'--:--';$('moonrise').textContent=hmDate(mt.rise);$('moonset').textContent=hmDate(mt.set);if(d&&offset===0){const n=new Date(),h=n.getHours()+n.getMinutes()/60,cur=interp(d.hourly,h),prev=interp(d.hourly,Math.max(0,h-1));$('currentTide').textContent=`${Math.round(cur)}cm`;$('tideDiff').textContent=`${cur-prev>=0?'↑':'↓'}${Math.abs(cur-prev).toFixed(1)}`}else{$('currentTide').textContent='--';$('tideDiff').textContent='--'}$('scoreBadge').textContent='--';$('bestTime1').textContent='--:--〜--:--';$('bestTime2').textContent='--:--〜--:--';drawTide(d,[]);const g=$('pointGrid');g.innerHTML='';for(const q of points.slice(0,9)){const b=document.createElement('button');b.className='pointBtn'+(q.name===selected?' active':'');b.innerHTML=`${q.name}<span class="pin">☆</span><small>${q.prefecture.replace('県','')}</small>`;b.onclick=()=>{selected=q.name;localStorage.setItem('ftbi.selected',selected);render();fetchWeather()};g.append(b)}fetchWeather();renderManage()}
+function renderCandidates(){const prefs=['すべて','愛知県','三重県','静岡県'],types=['すべて','サーフ','河口','港','海釣り公園','堤防'];$('prefChips').innerHTML='';prefs.forEach(v=>{const b=document.createElement('button');b.className='chip'+(mapPref===v?' active':'');b.textContent=v==='すべて'?'全県':v.replace('県','');b.onclick=()=>{mapPref=v;renderCandidates()};$('prefChips').append(b)});$('typeChips').innerHTML='';types.forEach(v=>{const b=document.createElement('button');b.className='chip'+(mapType===v?' active':'');b.textContent=v;b.onclick=()=>{mapType=v;renderCandidates()};$('typeChips').append(b)});const list=$('spotList');list.innerHTML='';CANDIDATES.filter(p=>(mapPref==='すべて'||p.prefecture===mapPref)&&(mapType==='すべて'||p.type===mapType)).forEach(p=>{const b=document.createElement('button');b.className='spotItem'+(chosen?.name===p.name?' active':'');b.innerHTML=`<div><b>${p.name}</b><span>${p.prefecture} ${p.area}／${p.type}／潮位基準：${window.JMA_TIDE_DATA?.[p.station]?.name||'--'}</span></div>`;b.onclick=()=>{chosen=p;$('mapSpotName').textContent=p.name;$('mapSpotMeta').textContent=`潮位基準：${window.JMA_TIDE_DATA?.[p.station]?.name||'--'}`;$('registerMapSpot').disabled=false;$('openGoogleMap').disabled=false;renderCandidates()};list.append(b)})}
+function registerChosen(){if(!chosen)return;const exists=points.findIndex(p=>p.name===chosen.name);if(exists>=0){selected=chosen.name}else if(points.length<9){points.push({...chosen});selected=chosen.name}else{const idx=Math.max(0,points.findIndex(p=>p.name===selected));points[idx]={...chosen};selected=chosen.name}savePoints();localStorage.setItem('ftbi.selected',selected);$('mapDialog').close();render()}
+function renderManage(){const list=$('manageList');if(!list)return;list.innerHTML='';points.forEach((p,i)=>{const row=document.createElement('div');row.className='manageRow';const n=document.createElement('div');n.className='manageName';n.textContent=`${p.name}（潮位：${window.JMA_TIDE_DATA?.[p.station]?.name||'--'}）`;const del=document.createElement('button');del.type='button';del.className='deleteBtn';del.textContent='削除';del.disabled=points.length<=1;del.onclick=()=>{points.splice(i,1);if(!points.some(q=>q.name===selected))selected=points[0].name;savePoints();localStorage.setItem('ftbi.selected',selected);render()};row.append(n,del);list.append(row)})}
+async function unlockAlarmAudio(){
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass) throw new Error('AudioContext unsupported');
+  audioCtx=audioCtx||new AudioContextClass();
+  if(audioCtx.state==='suspended') await audioCtx.resume();
+  // Safariで音声出力経路を確実に有効化するため、無音に近い短い音を一度再生する。
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  const t=audioCtx.currentTime;
+  g.gain.setValueAtTime(0.0001,t);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(t);o.stop(t+0.02);
+  alarmEnabled=true;
+  localStorage.setItem('ftbi.alarmEnabled','on');
 }
-function shortDir(deg){ const d=compass(deg); return d.replace('北北','北').replace('南南','南').replace('東北','東').replace('東南','東').replace('西北','西').replace('西南','西'); }
-
-function safetyClass(kind,value){
-  const v=Number(value);
-  if(!Number.isFinite(v)) return '';
-  if(kind==='wind'){
-    if(v<=10) return 'safeBlue';
-    if(v<=15) return 'safeYellow';
-    return 'safeRed';
-  }
-  if(kind==='wave'){
-    if(v<=1.0) return 'safeBlue';
-    if(v<=1.5) return 'safeYellow';
-    return 'safeRed';
-  }
-  return '';
-}
-function setSafetyText(id,text,kind,value){
-  const el=$(id);
-  el.textContent=text;
-  el.classList.remove('safeBlue','safeYellow','safeRed');
-  const cls=safetyClass(kind,value);
-  if(cls) el.classList.add(cls);
-}
-function svgEl(name,attrs={}){ const el=document.createElementNS('http://www.w3.org/2000/svg',name); Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v)); return el; }
-function linePath(points){ return points.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '); }
-
-function drawTide(tide){
-  const svg=$('tideSvg'); svg.innerHTML='';
-  const W=390,H=255, L=42,R=16,T=16,B=28; const plotW=W-L-R, plotH=H-T-B;
-  const vals=tide.data.map(d=>d.height); const min=Math.floor((Math.min(...vals)-20)/50)*50; const max=Math.ceil((Math.max(...vals)+20)/50)*50;
-  const x=h=>L+(h/24)*plotW; const y=v=>T+(max-v)/(max-min)*plotH;
-  svg.append(svgEl('rect',{x:0,y:0,width:W,height:H,fill:'transparent'}));
-  for(let cm=min;cm<=max;cm+=50){ const yy=y(cm); svg.append(svgEl('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'rgba(255,255,255,.18)','stroke-dasharray':'3 4'})); const tx=svgEl('text',{x:6,y:yy+4,class:'axisText'}); tx.textContent=`${cm}cm`; svg.append(tx); }
-  for(let h=0;h<=24;h+=3){ const xx=x(h); svg.append(svgEl('line',{x1:xx,y1:T,x2:xx,y2:H-B,stroke:'rgba(255,255,255,.18)','stroke-dasharray': h%6===0?'':'4 5'})); const tx=svgEl('text',{x:xx-6,y:H-8,class:'axisText'}); tx.textContent=h===24?'24時':String(h); svg.append(tx); }
-  svg.append(svgEl('path',{d:linePath(tide.data.map(d=>({x:x(d.hour),y:y(d.height)})))+` L ${x(24)} ${H-B} L ${x(0)} ${H-B} Z`,fill:'rgba(20,205,236,.25)'}));
-  svg.append(svgEl('path',{d:linePath(tide.data.map(d=>({x:x(d.hour),y:y(d.height)}))),fill:'none',stroke:'#35e6ff','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'}));
-  const p=selectedPoint(); const sun=sunTimes(selectedDate(),p.lon); const moon=moonTimes(tide.age);
-  [{h:sun.sunrise,c:'#ffd84a',label:'☀'}, {h:sun.sunset,c:'#ff8b2a',label:'🌇'}, {h:moon.rise,c:'#dff2ff',label:'☾'}].forEach(m=>{ const xx=x(m.h); svg.append(svgEl('rect',{x:xx-11,y:T,width:22,height:plotH,fill:m.c,opacity:.14})); svg.append(svgEl('line',{x1:xx,y1:T,x2:xx,y2:H-B,stroke:m.c,'stroke-dasharray':'3 4','stroke-width':1.2})); const t=svgEl('text',{x:xx-8,y:T+13,class:'axisText'}); t.textContent=m.label; svg.append(t); });
-  svg.append(svgEl('circle',{cx:x(currentHour()),cy:y(tideHeight(p,currentHour(),tide.age)),r:9,fill:'#ff2e31',stroke:'#fff','stroke-width':3}));
-  const curX=x(currentHour()), curY=y(tideHeight(p,currentHour(),tide.age));
-  const g=svgEl('g'); g.append(svgEl('rect',{x:clamp(curX+10,L,W-72),y:clamp(curY-38,T,H-68),width:62,height:42,rx:6,fill:'#ff2e31',stroke:'#fff'})); let t=svgEl('text',{x:clamp(curX+41,L+31,W-41),y:clamp(curY-20,T+18,H-50),class:'currentText','text-anchor':'middle'}); t.textContent='現在'; g.append(t); t=svgEl('text',{x:clamp(curX+41,L+31,W-41),y:clamp(curY-4,T+34,H-34),class:'currentText','text-anchor':'middle'}); t.textContent=`${Math.round(tideHeight(p,currentHour(),tide.age))}cm`; g.append(t); svg.append(g);
-  tide.extrema.slice(0,4).forEach(e=>{ const xx=x(e.hour), yy=y(e.height); svg.append(svgEl('circle',{cx:xx,cy:yy,r:6,fill:e.type==='high'?'#145bc3':'#062b50',stroke:'#fff','stroke-width':2})); const bw=58,bh=35,bx=clamp(xx-bw/2,L,W-R-bw),by=e.type==='high'?clamp(yy-43,T,H-B-bh):clamp(yy+9,T,H-B-bh); const gg=svgEl('g'); gg.append(svgEl('rect',{x:bx,y:by,width:bw,height:bh,rx:6,fill:e.type==='high'?'#126ce0':'#eaf6ff',stroke:'#70c8ff','stroke-width':1.5})); let tt=svgEl('text',{x:bx+bw/2,y:by+14,class:e.type==='high'?'calloutTime':'calloutCm','text-anchor':'middle'}); tt.textContent=hm(e.hour); gg.append(tt); tt=svgEl('text',{x:bx+bw/2,y:by+29,class:e.type==='high'?'calloutTime':'calloutCm','text-anchor':'middle'}); tt.textContent=`${Math.round(e.height)}cm`; gg.append(tt); svg.append(gg); });
-  for(let i=0;i<8;i++){ const fx=L+12+i*38, fy=H-B-18-(i%3)*10; svg.append(svgEl('path',{class:'fish',d:`M${fx} ${fy} q14 -8 28 0 q-14 8 -28 0 M${fx+26} ${fy} l8 -6 v12 z`})); }
-}
-
-function nearestHourly(hourly,key,hour){
-  if(!hourly || !hourly.time || !hourly[key]) return null;
-  const target=`${ymd(selectedDate())}T${String(Math.min(23,Math.floor(hour))).padStart(2,'0')}:00`;
-  let idx=hourly.time.indexOf(target); if(idx<0) idx=Math.min(hourly[key].length-1,Math.max(0,Math.round(hour)));
-  return hourly[key][idx];
-}
-function fallbackWeather(p){
-  const date=ymd(selectedDate());
-  const wh={time:[],temperature_2m:[],relative_humidity_2m:[],precipitation:[],weather_code:[],wind_speed_10m:[],wind_direction_10m:[],wind_gusts_10m:[],surface_pressure:[]};
-  const mh={time:[],wave_height:[],wave_direction:[],sea_surface_temperature:[]};
-  for(let h=0;h<24;h++){
-    wh.time.push(`${date}T${String(h).padStart(2,'0')}:00`);
-    wh.temperature_2m.push(+(23+4*Math.sin((h-7)/24*2*Math.PI)+(p.prefecture==='静岡県'?1:0)).toFixed(1));
-    wh.relative_humidity_2m.push(Math.round(70-8*Math.sin((h-8)/24*2*Math.PI)));
-    wh.precipitation.push(0); wh.weather_code.push(h>18||h<5?1:2);
-    wh.wind_speed_10m.push(+(3.5+2.1*Math.sin((h-10)/24*2*Math.PI)).toFixed(1));
-    wh.wind_direction_10m.push(150+50*Math.sin(h/24*2*Math.PI)); wh.wind_gusts_10m.push(+(5+2*Math.sin((h-10)/24*2*Math.PI)).toFixed(1)); wh.surface_pressure.push(1015);
-    mh.time.push(wh.time[h]); mh.wave_height.push(+(p.prefecture==='愛知県'?0.25:p.prefecture==='三重県'?0.35:p.prefecture==='静岡県'?0.45:0.5).toFixed(1)); mh.wave_direction.push(150); mh.sea_surface_temperature.push(+(23+1.2*Math.sin((h-8)/24*2*Math.PI)).toFixed(1));
-  }
-  return {weather:{hourly:wh},marine:{hourly:mh}};
-}
-async function fetchData(p){
-  const date=ymd(selectedDate());
-  const wParams=new URLSearchParams({latitude:p.lat,longitude:p.lon,timezone:'Asia/Tokyo',start_date:date,end_date:date,hourly:'temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure'});
-  const mParams=new URLSearchParams({latitude:p.lat,longitude:p.lon,timezone:'Asia/Tokyo',start_date:date,end_date:date,hourly:'wave_height,wave_direction,sea_surface_temperature'});
+async function enableAlarm(){
   try{
-    const [w,m]=await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?${wParams}`,{cache:'no-store'}),fetch(`https://marine-api.open-meteo.com/v1/marine?${mParams}`,{cache:'no-store'})]);
-    if(!w.ok||!m.ok) throw new Error('api');
-    state.weather=await w.json(); state.marine=await m.json();
-  }catch(e){ const fb=fallbackWeather(p); state.weather=fb.weather; state.marine=fb.marine; }
-}
-function hourlyValues(hour){
-  const wh=state.weather?.hourly||{}, mh=state.marine?.hourly||{};
-  return {temp:nearestHourly(wh,'temperature_2m',hour),hum:nearestHourly(wh,'relative_humidity_2m',hour),rain:nearestHourly(wh,'precipitation',hour),code:nearestHourly(wh,'weather_code',hour),wind:nearestHourly(wh,'wind_speed_10m',hour),dir:nearestHourly(wh,'wind_direction_10m',hour),gust:nearestHourly(wh,'wind_gusts_10m',hour),pressure:nearestHourly(wh,'surface_pressure',hour),wave:nearestHourly(mh,'wave_height',hour),water:nearestHourly(mh,'sea_surface_temperature',hour),waveDir:nearestHourly(mh,'wave_direction',hour)};
-}
-function scoreAt(hour,tide){
-  const v=hourlyValues(hour), p=selectedPoint();
-  const move=Math.abs(tideHeight(p,Math.min(24,hour+1),tide.age)-tideHeight(p,hour,tide.age));
-  const sun=sunTimes(selectedDate(),p.lon);
-  let s=38; s+=clamp(move/18,0,1)*24; s+=Math.max(0,1-Math.min(Math.abs(hour-sun.sunrise),Math.abs(hour-sun.sunset))/2.2)*18;
-  s+=(v.wind??3)<=5?13:(v.wind<=8?4:-10); s+=(v.wave??.3)<=.6?13:(v.wave<=1?5:-8); s+=(v.rain??0)<=.2?5:-8; s+=['大潮','中潮'].includes(tideClass(tide.age))?7:0;
-  return Math.round(clamp(s,0,100));
-}
-function bestWindows(tide){
-  const arr=[]; for(let h=0;h<24;h+=.5) arr.push({h,s:scoreAt(h,tide)});
-  const picks=[]; for(const row of [...arr].sort((a,b)=>b.s-a.s)){ if(picks.every(p=>Math.abs(p.h-row.h)>4)) picks.push(row); if(picks.length===2) break; }
-  return picks.map(p=>({start:clamp(p.h-1.25,0,23.5),end:clamp(p.h+1.25,.5,24),score:p.s})).sort((a,b)=>a.start-b.start);
-}
-function renderHourly(){
-  const hours=[0,3,6,9,12,15,18,21,23]; const grid=$('hourlyGrid'); grid.innerHTML='';
-  const heads=['時間','天気','風向','風速','波高','水温'];
-  heads.forEach((h,r)=>{ const d=document.createElement('div'); d.textContent=h; d.className='rowHead'; grid.append(d); hours.forEach(hour=>{ const v=hourlyValues(hour); const c=document.createElement('div'); if(r===0){c.textContent=hour===23?'23':String(hour); c.className='hourCell'} if(r===1){c.textContent=weatherIcon(v.code,hour); c.className='weatherCell'} if(r===2){c.innerHTML=`<span class="arrow" style="transform:rotate(${v.dir||0}deg)">➤</span><small>${shortDir(v.dir)}</small>`; c.className='numCell'} if(r===3){c.textContent=`${(v.wind??0).toFixed(1)}`; c.className='numCell '+safetyClass('wind',v.wind)} if(r===4){c.textContent=`${(v.wave??0).toFixed(1)}m`; c.className='waveCell '+safetyClass('wave',v.wave)} if(r===5){c.textContent=`${(v.water??0).toFixed(1)}°`; c.className='tempCell'} grid.append(c); }); });
-}
-function renderPoints(){
-  const grid=$('pointGrid'); grid.innerHTML='';
-  state.points.slice(0,9).forEach(p=>{ const b=document.createElement('button'); b.className='pointBtn'+(p.name===state.selectedName?' active':''); b.innerHTML=`<span>${p.name}</span><small>${p.prefecture.replace('県','')}</small><i class="pin">${state.favorites.has(p.name)?'★':'☆'}</i>`; b.onclick=()=>{state.selectedName=p.name;localStorage.setItem('ftbi.selected',p.name); renderAll();}; grid.append(b); });
-}
-function renderManageList(){
-  const list=$('manageList'); if(!list) return; list.innerHTML='';
-  state.points.slice(0,9).forEach(p=>{ const row=document.createElement('div'); row.className='manageRow'; row.innerHTML=`<div class="manageName">${p.name}<small>　${p.prefecture} ${p.type||''}</small></div><button class="deleteBtn">削</button>`; row.querySelector('button').onclick=()=>{ state.points=state.points.filter(x=>x.name!==p.name); if(state.selectedName===p.name) state.selectedName=state.points[0]?.name||'名古屋港'; savePoints(); renderAll(); renderManageList(); }; list.append(row); });
-}
-async function renderAll(){
-  const p=selectedPoint(); $('dateButton').textContent=fmtDate(selectedDate()); $('prefName').textContent=p.prefecture; $('pointName').textContent=p.name;
-  $('favButton').textContent=state.favorites.has(p.name)?'★':'☆';
-  const tide=tideSeries(p,selectedDate()); const ch=tideClass(tide.age); $('tideType').textContent=ch; $('moonAge').textContent=tide.age.toFixed(1);
-  const sun=sunTimes(selectedDate(),p.lon), moon=moonTimes(tide.age); $('sunrise').textContent=hm(sun.sunrise); $('sunset').textContent=hm(sun.sunset); $('moonrise').textContent=hm(moon.rise); $('moonset').textContent=hm(moon.set);
-  const cur=tideHeight(p,currentHour(),tide.age), prev=tideHeight(p,Math.max(0,currentHour()-1),tide.age); $('currentTide').textContent=`${Math.round(cur)}cm`; $('tideDiff').textContent=`${cur-prev>=0?'↑':'↓'}${Math.abs(cur-prev).toFixed(1)}`;
-  drawTide(tide); renderPoints();
-  await fetchData(p);
-  const now=hourlyValues(currentHour()); $('weatherIcon').textContent=weatherIcon(now.code,currentHour()); $('weatherText').textContent=weatherText(now.code); $('temperature').textContent=`${(now.temp??0).toFixed(1)}℃`; $('windDir').textContent=compass(now.dir); setSafetyText('windSpeed',`${(now.wind??0).toFixed(1)}m/s`,'wind',now.wind); setSafetyText('waveHeight',`${(now.wave??0).toFixed(1)}m`,'wave',now.wave); $('waterTemp').textContent=`${(now.water??0).toFixed(1)}℃`;
-  const wins=bestWindows(tide); $('bestTime1').textContent=wins[0]?`${hm(wins[0].start)}〜${hm(wins[0].end)}`:'--'; $('bestTime2').textContent=wins[1]?`${hm(wins[1].start)}〜${hm(wins[1].end)}`:'--'; const score=scoreAt(currentHour(),tide); $('scoreBadge').textContent=score;
-  renderHourly(); renderManageList();
-}
-
-function filteredSpots(){
-  let arr=SPOTS.filter(s=>s.prefecture===state.mapPref && (state.mapType==='すべて'||s.type===state.mapType));
-  const seen=new Set();
-  arr=arr.filter(s=>{ const key=s.prefecture+s.name; if(seen.has(key)) return false; seen.add(key); return true; });
-  if(state.userLocation){
-    arr=arr.map(s=>({...s,distance:degDistanceKm(state.userLocation.lat,state.userLocation.lon,s.lat,s.lon)})).sort((a,b)=>a.distance-b.distance);
-  } else {
-    arr=arr.sort((a,b)=>{
-      const typeOrder=(a.type==='サーフ'?0:a.type==='河口'?1:2)-(b.type==='サーフ'?0:b.type==='河口'?1:2);
-      return typeOrder || a.area.localeCompare(b.area,'ja') || a.name.localeCompare(b.name,'ja');
-    });
+    await unlockAlarmAudio();
+    $('quakeStatus').textContent='警報音：この画面で有効';
+    beep(3);
+  }catch(e){
+    $('quakeStatus').textContent='警報音を有効化できません';
   }
-  return arr;
 }
-function renderMapControls(){
-  const pc=$('prefChips'); pc.innerHTML='';
-  PREFS.forEach(pref=>{ const b=document.createElement('button'); b.className='chip'+(pref===state.mapPref?' active':''); b.textContent=pref.replace('県',''); b.onclick=()=>{state.mapPref=pref; state.userLocation=null; state.chosenSpot=null; renderMap();}; pc.append(b); });
-  const tc=$('typeChips'); tc.innerHTML='';
-  TYPES.forEach(type=>{ const b=document.createElement('button'); b.className='chip'+(type===state.mapType?' active':''); b.textContent=type; b.onclick=()=>{state.mapType=type; state.chosenSpot=null; renderMap();}; tc.append(b); });
-}
-function chooseMapSpot(s){
-  state.chosenSpot={...s};
-  $('mapSpotName').textContent=s.name;
-  $('mapSpotMeta').textContent=`${s.prefecture} ${s.area}｜${s.type}${s.distance?`｜約${s.distance.toFixed(1)}km`:''}｜緯度経度は自動入力`;
-  $('registerMapSpot').disabled=false;
-  $('openGoogleMap').disabled=false;
-  renderMap();
-}
-function renderMap(){
-  renderMapControls();
-  const arr=filteredSpots();
-  const list=$('spotList'); list.innerHTML='';
-  if(!state.chosenSpot){
-    $('mapSpotName').textContent='釣り場を選択';
-    $('mapSpotMeta').textContent=`${state.mapPref} ${state.mapType}：${arr.length}件`;
-    $('registerMapSpot').disabled=true;
-    $('openGoogleMap').disabled=true;
+function beep(n=6){
+  if(!alarmEnabled||!audioCtx||audioCtx.state!=='running')return false;
+  const start=audioCtx.currentTime+0.03;
+  for(let i=0;i<n;i++){
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    const t=start+i*.42;
+    o.type='square';
+    o.frequency.setValueAtTime(i%2?960:720,t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.5,t+.025);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+.31);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(t);o.stop(t+.34);
   }
-  arr.forEach(s=>{
-    const item=document.createElement('button');
-    item.className='spotItem'+(state.chosenSpot?.name===s.name?' active':'');
-    const typeClass=s.type==='サーフ'?'spotTypeSurf':s.type==='河口'?'spotTypeRiver':'spotTypePort';
-    item.innerHTML=`<div><b>${s.name}</b><span>${s.prefecture} ${s.area}｜<em class="${typeClass}">${s.type}</em>｜緯度 ${s.lat.toFixed(3)} 経度 ${s.lon.toFixed(3)}</span></div><span class="distance">${s.distance?`${s.distance.toFixed(1)}km`:'登録'}</span>`;
-    item.onclick=()=>chooseMapSpot(s);
-    list.append(item);
-  });
+  return true;
 }
-function registerSpot(s){
-  const spot={...s}; if(!spot.amp){ spot.amp=50; spot.base=100; spot.phase=0; }
-  const exists=state.points.findIndex(p=>p.name===spot.name);
-  if(exists>=0){ state.points[exists]=spot; }
-  else if(state.points.length<9){ state.points.push(spot); }
-  else { const idx=Math.max(0,state.points.findIndex(p=>p.name===state.selectedName)); state.points[idx]=spot; }
-  state.selectedName=spot.name; localStorage.setItem('ftbi.selected',spot.name); savePoints(); renderAll();
-}
-function googleMapUrl(s){ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${s.name} ${s.prefecture} ${s.area}`)}`; }
-function openMapDialog(){ $('mapDialog').showModal(); renderMap(); }
-function openSettings(){ renderManageList(); $('settingsDialog').showModal(); }
-
-
-// ===== 地震・津波アラート =====
-const QUAKE_TARGET_PREFS = ['愛知県','三重県','静岡県','和歌山県','福井県','石川県'];
-const QUAKE_EPICENTER_KEYWORDS = ['伊勢湾','三河湾','遠州灘','駿河湾','相模湾','伊豆','熊野灘','紀伊水道','若狭湾','能登','石川県','福井県','静岡県','愛知県','三重県','和歌山県'];
-
-function scaleLabel(scale){
-  const n=Number(scale);
-  if(!Number.isFinite(n) || n<=0) return '震度--';
-  if(n>=70) return '震度7';
-  if(n>=65) return '震度6強';
-  if(n>=60) return '震度6弱';
-  if(n>=55) return '震度5強';
-  if(n>=50) return '震度5弱';
-  if(n>=45) return '震度5弱未満';
-  if(n>=40) return '震度4';
-  if(n>=30) return '震度3';
-  if(n>=20) return '震度2';
-  if(n>=10) return '震度1';
-  return '震度--';
-}
-function quakeId(item){ return item?.id || item?._id || item?.time || item?.issue?.time || JSON.stringify(item).slice(0,80); }
-function quakeTextTime(item){ return item?.earthquake?.time || item?.issue?.time || item?.time || ''; }
-function quakeEpicenter(item){ return item?.earthquake?.hypocenter?.name || item?.earthquake?.hypocenter?.area?.name || '震源不明'; }
-function maxScaleFromPoints(points){
-  if(!Array.isArray(points)) return 0;
-  return points.reduce((m,p)=>Math.max(m, Number(p.scale ?? p.maxScale ?? p.intensity ?? 0)),0);
-}
-function isRelevantQuake(item){
-  const maxScale = Number(item?.earthquake?.maxScale ?? maxScaleFromPoints(item?.points) ?? 0);
-  if(maxScale < 30) return false;
-  const epi = quakeEpicenter(item);
-  if(QUAKE_EPICENTER_KEYWORDS.some(k=>epi.includes(k))) return true;
-  const pts = Array.isArray(item?.points) ? item.points : [];
-  return pts.some(p=>{
-    const pref = p.pref || p.prefecture || p.addr || p.name || p.region || '';
-    const sc = Number(p.scale ?? p.maxScale ?? p.intensity ?? 0);
-    return sc >= 30 && QUAKE_TARGET_PREFS.some(t=>String(pref).includes(t.replace('県','')) || String(pref).includes(t));
-  });
-}
-function tsunamiTextFromQuake(item){
-  const t = item?.earthquake?.domesticTsunami || item?.comments?.var?.domesticTsunami || '';
-  if(!t || t === 'None') return '津波情報も確認してください';
-  if(t === 'Unknown' || t === 'Checking') return '津波の有無を確認中。海から離れてください';
-  if(t === 'NonEffective') return '若干の海面変動の可能性。海岸では注意';
-  if(t === 'Watch' || t === 'Warning') return '津波注意報・警報の可能性。直ちに高い場所へ';
-  return `津波情報：${t}`;
-}
-function showQuakeAlert({scale='震度3', epicenter='震源不明', message='海岸・堤防・河口から離れてください', tsunami='津波情報を確認してください'}={}){
-  const box=$('quakeAlert'); if(!box) return;
+function alertScreen(title,scale,epi,msg,tsu,test=false){
+  $('quakeTitle').textContent=test?'訓練・警報テスト':title;
   $('quakeScale').textContent=scale;
-  $('quakeEpicenter').textContent=`震源：${epicenter}`;
-  $('quakeMessage').textContent=message;
-  $('quakeTsunami').textContent=tsunami;
-  box.hidden=false;
-  startAlarmSound();
+  $('quakeEpicenter').textContent=`震源：${epi}`;
+  $('quakeMessage').textContent=msg;
+  $('quakeTsunami').textContent=tsu;
+  $('quakeAlert').hidden=false;
+  beep(8);
 }
-function hideQuakeAlert(){
-  const box=$('quakeAlert'); if(box) box.hidden=true;
-  stopAlarmSound();
-}
-function unlockAlarm(){
+async function runAlarmTest(){
   try{
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if(!AC) throw new Error('no audio');
-    state.audioCtx = state.audioCtx || new AC();
-    if(state.audioCtx.state === 'suspended') state.audioCtx.resume();
-    const osc=state.audioCtx.createOscillator(); const gain=state.audioCtx.createGain();
-    gain.gain.value=.0001; osc.connect(gain); gain.connect(state.audioCtx.destination); osc.start(); osc.stop(state.audioCtx.currentTime+.03);
-    state.alarmUnlocked=true; state.alarmEnabled=true; localStorage.setItem('ftbi.alarmEnabled','on');
-    updateQuakeControls('警報音：有効');
-  }catch(e){ alert('この端末では警報音を有効化できません'); }
+    // テストボタン自体がユーザー操作なので、ここでSafariの音声制限を解除する。
+    await unlockAlarmAudio();
+    $('quakeStatus').textContent='警報音：テスト再生中';
+    alertScreen('地震情報','震度3','伊勢湾','海岸・堤防・河口から離れてください','これは訓練表示です',true);
+    setTimeout(()=>{if(audioCtx?.state==='running')$('quakeStatus').textContent='警報音：この画面で有効'},3600);
+  }catch(e){
+    $('quakeStatus').textContent='警報音テストに失敗しました';
+  }
 }
-function beepOnce(){
-  if(!state.alarmEnabled || !state.alarmUnlocked) return;
-  const ctx=state.audioCtx; if(!ctx) return;
-  const now=ctx.currentTime;
-  [0, .32, .64].forEach((off,i)=>{
-    const osc=ctx.createOscillator(); const gain=ctx.createGain();
-    osc.type='square'; osc.frequency.value=i%2?880:660;
-    gain.gain.setValueAtTime(0.0001, now+off);
-    gain.gain.exponentialRampToValueAtTime(.24, now+off+.03);
-    gain.gain.exponentialRampToValueAtTime(.0001, now+off+.22);
-    osc.connect(gain); gain.connect(ctx.destination); osc.start(now+off); osc.stop(now+off+.24);
-  });
-}
-function startAlarmSound(){
-  if(state.alarmTimer) clearInterval(state.alarmTimer);
-  beepOnce();
-  state.alarmTimer=setInterval(beepOnce,1300);
-}
-function stopAlarmSound(){ if(state.alarmTimer){ clearInterval(state.alarmTimer); state.alarmTimer=null; } }
-function updateQuakeControls(status){
-  const toggle=$('quakeAlertToggle'); if(toggle) toggle.checked=state.quakeAlertEnabled;
-  const st=$('quakeStatus'); if(st && status) st.textContent=status;
-}
-async function checkEarthquakeAndTsunami(){
-  if(!state.quakeAlertEnabled) return;
-  try{
-    const qRes=await fetch('https://api.p2pquake.net/v2/jma/quake?limit=5&min_scale=30',{cache:'no-store'});
-    if(qRes.ok){
-      const list=await qRes.json();
-      const recent=Array.isArray(list) ? list.find(isRelevantQuake) : null;
-      if(recent){
-        const id=quakeId(recent);
-        if(id && id !== state.lastQuakeId){
-          state.lastQuakeId=id; localStorage.setItem('ftbi.lastQuakeId',id);
-          const maxScale=Number(recent?.earthquake?.maxScale ?? maxScaleFromPoints(recent?.points) ?? 30);
-          const epi=quakeEpicenter(recent);
-          showQuakeAlert({scale:scaleLabel(maxScale), epicenter:epi, message:'海岸・堤防・河口から離れてください', tsunami:tsunamiTextFromQuake(recent)});
-        }
-      }
-      updateQuakeControls(`地震情報：監視中 / 最終確認 ${new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}`);
-    }
-    const tRes=await fetch('https://api.p2pquake.net/v2/jma/tsunami?limit=1',{cache:'no-store'});
-    if(tRes.ok){
-      const tsu=await tRes.json();
-      const t=Array.isArray(tsu) ? tsu[0] : null;
-      const id=quakeId(t);
-      const body=JSON.stringify(t||{});
-      const active = /津波|Warning|Watch|Tsunami|注意報|警報/.test(body) && !/解除|解除済|None/.test(body);
-      if(t && active && id && id!==state.lastTsunamiId){
-        state.lastTsunamiId=id; localStorage.setItem('ftbi.lastTsunamiId',id);
-        showQuakeAlert({scale:'津波情報', epicenter:'気象庁発表', message:'海岸・堤防・河口から直ちに離れてください', tsunami:'津波注意報・警報を確認してください'});
-      }
-    }
-  }catch(e){ updateQuakeControls('地震情報：取得できません。通信状態を確認してください'); }
-}
-function startEarthquakeWatch(){
-  updateQuakeControls('地震情報：待機中');
-  checkEarthquakeAndTsunami();
-  if(state.earthquakeTimer) clearInterval(state.earthquakeTimer);
-  state.earthquakeTimer=setInterval(checkEarthquakeAndTsunami,60000);
-}
-
-function setupEvents(){
-  $('prevDay').onclick=()=>{state.dateOffset=Math.max(-1,state.dateOffset-1); renderAll();};
-  $('nextDay').onclick=()=>{state.dateOffset=Math.min(14,state.dateOffset+1); renderAll();};
-  $('dateButton').onclick=()=>{ const steps=[0,1,3,7,14]; const i=steps.indexOf(state.dateOffset); state.dateOffset=steps[(i+1)%steps.length]; renderAll(); };
-  $('favButton').onclick=()=>{ const p=selectedPoint(); state.favorites.has(p.name)?state.favorites.delete(p.name):state.favorites.add(p.name); saveFavs(); renderAll(); };
-  $('mapOpen').onclick=openMapDialog; $('settingsOpen').onclick=openSettings; $('mapClose').onclick=()=>$('mapDialog').close();
-  $('registerMapSpot').onclick=()=>{ if(state.chosenSpot){ registerSpot(state.chosenSpot); $('mapDialog').close(); }};
-  $('openGoogleMap').onclick=()=>{ if(state.chosenSpot) window.open(googleMapUrl(state.chosenSpot),'_blank'); };
-  $('nearButton').onclick=()=>{ if(!navigator.geolocation){ alert('位置情報が使えません'); return; } navigator.geolocation.getCurrentPosition(pos=>{ state.userLocation={lat:pos.coords.latitude,lon:pos.coords.longitude}; renderMap(); },()=>alert('位置情報を取得できませんでした'),{enableHighAccuracy:true,timeout:10000}); };
-  $('resetPoints').onclick=()=>{ state.points=DEFAULT_POINTS.map(p=>({...p})); state.selectedName='名古屋港'; savePoints(); localStorage.setItem('ftbi.selected',state.selectedName); renderAll(); renderManageList(); };
-  const qToggle=$('quakeAlertToggle');
-  if(qToggle){ qToggle.checked=state.quakeAlertEnabled; qToggle.onchange=()=>{ state.quakeAlertEnabled=qToggle.checked; localStorage.setItem('ftbi.quakeAlert', state.quakeAlertEnabled?'on':'off'); updateQuakeControls(state.quakeAlertEnabled?'地震情報：監視ON':'地震情報：監視OFF'); }; }
-  const alarmBtn=$('enableAlarm'); if(alarmBtn) alarmBtn.onclick=unlockAlarm;
-  const testBtn=$('testQuakeAlert'); if(testBtn) testBtn.onclick=()=>showQuakeAlert({scale:'震度3',epicenter:'伊勢湾',message:'海岸・堤防・河口から離れてください',tsunami:'津波情報を確認してください'});
-  const qClose=$('quakeClose'); if(qClose) qClose.onclick=hideQuakeAlert;
-}
-
-
-setupEvents();
-renderAll();
-startEarthquakeWatch();
+const TARGET_WORDS=['愛知','三重','静岡','岐阜','長野','滋賀','京都','奈良','和歌山','福井','石川','伊勢湾','三河湾','遠州灘','東海道南方沖','紀伊半島'];
+async function checkQuake(){if(!quakeEnabled){$('quakeStatus').textContent='地震情報：OFF';return}try{const [qr,tr]=await Promise.all([fetch('https://api.p2pquake.net/v2/jma/quake?limit=5&min_scale=30',{cache:'no-store'}),fetch('https://api.p2pquake.net/v2/jma/tsunami?limit=3',{cache:'no-store'})]);if(!qr.ok||!tr.ok)throw Error();const qs=await qr.json(),ts=await tr.json();$('quakeStatus').textContent='地震情報：監視中';for(const q of qs){const id=String(q?.id||q?.issue?.time||''),issue=new Date(q?.issue?.time||0),epi=q?.earthquake?.hypocenter?.name||'不明',max=q?.earthquake?.maxScale??0;if(id&&id!==localStorage.getItem('ftbi.lastQuakeId')&&Date.now()-issue<15*60*1000&&max>=30&&TARGET_WORDS.some(w=>epi.includes(w))){localStorage.setItem('ftbi.lastQuakeId',id);alertScreen('地震情報',`震度${max/10}`,epi,'海岸・堤防・河口から離れ、公式情報を確認してください','津波の有無は気象庁・自治体情報で確認してください');break}}for(const t of ts){const id=String(t?.id||t?.issue?.time||'');const issue=new Date(t?.issue?.time||0);if(id&&id!==localStorage.getItem('ftbi.lastTsunamiId')&&Date.now()-issue<90*60*1000){localStorage.setItem('ftbi.lastTsunamiId',id);alertScreen('津波情報','津波警報等','気象庁発表','海岸・河口から直ちに離れてください','Jアラート・気象庁・自治体の指示に従ってください');break}}}catch(e){$('quakeStatus').textContent='地震情報：取得不能'}}
+$('prevDay').onclick=()=>{offset=Math.max(0,offset-1);render()};$('nextDay').onclick=()=>{offset=Math.min(14,offset+1);render()};$('mapOpen').onclick=()=>{chosen=null;renderCandidates();$('mapDialog').showModal()};$('mapClose').onclick=()=>$('mapDialog').close();$('registerMapSpot').onclick=registerChosen;$('openGoogleMap').onclick=()=>{if(chosen)window.open(`https://www.google.com/maps?q=${chosen.lat},${chosen.lon}`,'_blank','noopener')};$('nearButton').onclick=()=>alert('現在地による並び替えはHTTPS公開時に使用できます');$('settingsOpen').onclick=()=>{$('settingsDialog').showModal();renderManage()};$('enableAlarm').onclick=enableAlarm;$('testQuakeAlert').onclick=runAlarmTest;$('quakeAlertToggle').checked=quakeEnabled;$('quakeAlertToggle').onchange=e=>{quakeEnabled=e.target.checked;localStorage.setItem('ftbi.quakeAlert',quakeEnabled?'on':'off');checkQuake()};$('quakeClose').onclick=()=>$('quakeAlert').hidden=true;$('resetPoints').onclick=()=>{points=INITIAL.map(p=>({...p}));selected='四日市港';savePoints();localStorage.setItem('ftbi.selected',selected);render()};$('favButton').onclick=()=>{};
+if(alarmEnabled&&$('quakeStatus'))$('quakeStatus').textContent='警報音：再有効化が必要';
+render();checkQuake();setInterval(checkQuake,60000);

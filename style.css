@@ -41,3 +41,57 @@ button,input,select{font:inherit;color:inherit} button{border:0;cursor:pointer} 
 .quakeSettingsHead{display:flex;align-items:center;justify-content:space-between;gap:8px}.quakeSettingsHead strong{font-size:16px;color:#ffdddd}.switchLine{font-size:14px;font-weight:900;display:flex;align-items:center;gap:6px}.switchLine input{width:22px;height:22px;accent-color:#ff3947}.quakeSettings p{font-size:12px;line-height:1.35;color:#ffcaca;margin:8px 0}.quakeButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.warningBtn{background:linear-gradient(180deg,#ffd84a,#bc6b00)!important;color:#1b1300!important}.dangerBtn{background:linear-gradient(180deg,#ff3545,#9d0000)!important;color:#fff!important}.quakeStatus{font-size:12px;color:#ffcaca;margin-top:8px;line-height:1.35}
 
 .quakeSub{font-size:11px;color:#ffd84a;font-weight:900;margin-left:6px}.quakeSettingsHead{flex-wrap:wrap}.quakeButtons .wideBtn{font-size:15px}
+
+/* JS表示補助：元デザインを崩さない */
+.windArrow{display:inline-block;margin-right:3px;font-size:15px;line-height:1}
+.optimalBand{fill:rgba(255,216,74,.12)}
+.optimalLine{stroke:#ffd84a;stroke-width:1.2;stroke-dasharray:3 4}
+.optimalLabel{font-size:9px;fill:#ffd84a;font-weight:900}
+
+/* Weather hazard banner: overlays unused chart space without changing layout */
+.weatherWarning{position:absolute;z-index:4;top:7px;right:8px;max-width:245px;padding:6px 9px;border-radius:9px;font-size:11px;font-weight:900;line-height:1.25;text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.55);pointer-events:none}
+.weatherWarning[hidden]{display:none!important}.weatherWarning.caution{background:rgba(125,84,0,.94);border:1px solid #ffd84a;color:#fff7c2}.weatherWarning.danger{background:rgba(145,0,10,.95);border:1px solid #ff7b84;color:#fff}.weatherWarning.info{background:rgba(0,63,112,.94);border:1px solid #48d7ff;color:#e9fbff}
+
+/* Settings dialog: keep every control inside the rounded container */
+.settingsDialog{
+  overflow:hidden;
+}
+.settingsPanel{
+  width:calc(100% - 16px);
+  height:min(86dvh,840px);
+  max-height:86dvh;
+  margin:7dvh 8px;
+  overflow:hidden;
+  grid-template-rows:auto auto auto minmax(0,1fr) 48px 48px;
+  align-content:stretch;
+}
+.manageList{
+  min-height:0;
+  max-height:none;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-right:2px;
+}
+.settingsPanel > .wideBtn{
+  width:100%;
+  min-height:48px;
+  margin:0;
+}
+@media (max-height:760px){
+  .settingsPanel{
+    height:94dvh;
+    max-height:94dvh;
+    margin:3dvh 6px;
+    width:calc(100% - 12px);
+    padding:10px;
+    gap:7px;
+    grid-template-rows:auto auto auto minmax(0,1fr) 44px 44px;
+  }
+  .settingsPanel > .wideBtn{height:44px;min-height:44px}
+  .quakeSettings{padding:8px;margin:4px 0}
+  .quakeSettings p{margin:5px 0}
+  .quakeButtons .wideBtn{height:42px;min-height:42px}
+  .manageRow{gap:5px}
+  .manageName{padding:7px 9px}
+  .deleteBtn{height:38px}
+}
